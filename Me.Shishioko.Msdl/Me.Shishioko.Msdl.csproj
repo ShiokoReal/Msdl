@@ -2,12 +2,25 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>$(AssemblyName)</Title>
+    <Authors>Shishioko</Authors>
+    <Company>Shishioko@me</Company>
+    <Description>Minecraft Server Development Library</Description>
+    <Copyright>Credit</Copyright>
+    <NeutralLanguage>en-001</NeutralLanguage>
+    <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+    <FileVersion>$(VersionPrefix)</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Util\" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.10.48" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\BlockEnums\" />
   </ItemGroup>
 
 </Project>
