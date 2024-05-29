@@ -39,8 +39,8 @@ namespace Me.Shishioko.Msdl
             Guid = guid;
             Name = name;
             Properties = properties;
-        }
-        internal void SendConfigurationRegistries(Dimension[] dimensionTypes, Biome[] biomes) //TODO: other registries
+        } //TODO: merge with connection.cs
+        public void SendConfigurationRegistries(Dimension[] dimensionTypes, Biome[] biomes) //TODO: other registries
         {
             Contract.Requires(Configuring);
             Contract.Requires(dimensionTypes.Length > 0);

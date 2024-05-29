@@ -74,6 +74,10 @@ namespace Me.Shishioko.Msdl.Test
                     };
                     connection.OnPlay += (Client client) =>
                     {
+                        string[] dimensionNames = ["namespace:dimensionname"];
+                        Dimension[] dimensionTypes = [new("namespace:dimensiontype")];
+                        Biome[] biomes = [new("namespace:biome")];
+                        client.SendConfigurationRegistries(dimensionTypes, biomes);
                         //registry
                         //end
                         //login
