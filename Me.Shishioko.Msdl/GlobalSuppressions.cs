@@ -4,5 +4,3 @@
 // a specific target and scoped to a namespace, type, member, etc.
 
 using System.Diagnostics.CodeAnalysis;
-
-[assembly: SuppressMessage("Style", "VSTHRD200:Use \"Async\" suffix for async methods", Justification = "<Ausstehend>", Scope = "member", Target = "~M:Me.Shishioko.Msdl.Client.Update~System.Threading.Tasks.Task")]

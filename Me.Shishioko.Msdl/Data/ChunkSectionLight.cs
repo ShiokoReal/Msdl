@@ -1,4 +1,4 @@
-﻿using Me.Shishioko.Msdl.Util;
+﻿using Net.Myzuc.ShioLib;
 using System.Diagnostics.Contracts;
 
 namespace Me.Shishioko.Msdl.Data
@@ -15,6 +15,10 @@ namespace Me.Shishioko.Msdl.Data
                 Contract.Requires(data.Length == 4096);
                 Data = data;
             }
+        }
+        public ChunkSectionLight()
+        {
+            Data = new(4, 4096);
         }
     }
 }

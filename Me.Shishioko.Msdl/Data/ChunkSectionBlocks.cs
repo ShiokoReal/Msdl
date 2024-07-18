@@ -12,5 +12,10 @@ namespace Me.Shishioko.Msdl.Data
             Data = data;
             NotAir = notAir;
         }
+        public ChunkSectionBlocks()
+        {
+            Data = new int[4096];
+            NotAir = 0;
+        }
     }
 }
