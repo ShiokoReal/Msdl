@@ -1,7 +1,8 @@
 ﻿using Me.Shishioko.Msdl.Data.Chat;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Web;
 
 namespace Me.Shishioko.Msdl.Data
 {
@@ -9,25 +10,20 @@ namespace Me.Shishioko.Msdl.Data
     {
         public sealed class StatusPlayerInfo
         {
-            [JsonProperty("max")]
-            public int? Max { get; set; }
-            [JsonProperty("online")]
-            public int? Online { get; set; }
-            [JsonProperty("sample")]
-            public IEnumerable<StatusPlayer>? Sample { get; set; }
+            public int? Max;
+            public int? Online;
+            public IEnumerable<StatusPlayer>? Samples;
             public StatusPlayerInfo()
             {
                 Max = null;
                 Online = null;
-                Sample = null;
+                Samples = null;
             }
         }
         public sealed class StatusPlayer
         {
-            [JsonProperty("name")]
-            public string Name { get; set; }
-            [JsonProperty("id")]
-            public Guid Id { get; set; }
+            public string Name;
+            public Guid Id;
             public StatusPlayer(string name, Guid id)
             {
                 Name = name;
@@ -36,26 +32,19 @@ namespace Me.Shishioko.Msdl.Data
         }
         public sealed class StatusVersion
         {
-            [JsonProperty("name")]
-            public string Name { get; set; }
-            [JsonProperty("protocol")]
-            public int Protocol { get; set; }
+            public string Name;
+            public int Protocol;
             public StatusVersion(string name, int protocol)
             {
                 Name = name;
                 Protocol = protocol;
             }
         }
-        [JsonProperty("version")]
-        public StatusVersion? Version { get; set; }
-        [JsonProperty("players")]
-        public StatusPlayerInfo? Players { get; set; }
-        [JsonProperty("description")]
-        public ChatComponent? Description { get; set; }
-        [JsonProperty("favicon")]
-        public string? Favicon { get; set; }
-        [JsonProperty("enforcesSecureChat")]
-        public bool? EnforcesSecureChat { get; set; }
+        public StatusVersion? Version;
+        public StatusPlayerInfo? Players;
+        public ChatComponent? Description;
+        public string? Favicon;
+        public bool? EnforcesSecureChat;
         public ServerStatus()
         {
             Version = null;
@@ -63,6 +52,76 @@ namespace Me.Shishioko.Msdl.Data
             Description = null;
             Favicon = null;
             EnforcesSecureChat = null;
+        }
+        internal string TextSerialize()
+        {
+            StringBuilder json = new();
+            json.Append('{');
+            bool empty = true;
+            if (Version is not null)
+            {
+                json.Append("\"version\":{\"name\":\"");
+                json.Append(HttpUtility.JavaScriptStringEncode(Version.Name, false));
+                json.Append("\",\"protocol\":");
+                json.Append(Version.Protocol);
+                json.Append("},");
+                empty = false;
+            }
+            if (Players is not null)
+            {
+                json.Append("\"players\":{");
+                if (Players.Max.HasValue)
+                {
+                    json.Append("\"max\":");
+                    json.Append(Players.Max.Value);
+                    json.Append(',');
+                }
+                if (Players.Online.HasValue)
+                {
+                    json.Append("\"online\":");
+                    json.Append(Players.Online.Value);
+                    json.Append(',');
+                }
+                if (Players.Samples is not null)
+                {
+                    json.Append("\"sample\":[");
+                    foreach(StatusPlayer player in Players.Samples)
+                    {
+                        json.Append("{\"name\":\"");
+                        json.Append(HttpUtility.JavaScriptStringEncode(player.Name, false));
+                        json.Append("\",\"id\":\"");
+                        json.Append(player.Id.ToString());
+                        json.Append("\"}");
+                    }
+                    json.Append("],");
+                }
+                json.Append("},");
+                empty = false;
+            }
+            if (Description is not null)
+            {
+                json.Append("\"description\":");
+                json.Append(Description.TextSerialize());
+                json.Append(',');
+                empty = false;
+            }
+            if (Favicon is not null)
+            {
+                json.Append("\"favicon\":");
+                json.Append(HttpUtility.JavaScriptStringEncode(Favicon, false));
+                json.Append("\",");
+                empty = false;
+            }
+            if (EnforcesSecureChat.HasValue)
+            {
+                json.Append("\"enforcesSecureChat\":");
+                json.Append(EnforcesSecureChat.Value ? "true" : "false");
+                json.Append(',');
+                empty = false;
+            }
+            if (!empty) json.Remove(json.Length - 1, 1);
+            json.Append('}');
+            return json.ToString();
         }
     }
 }

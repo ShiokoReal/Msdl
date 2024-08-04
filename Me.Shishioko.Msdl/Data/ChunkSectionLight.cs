@@ -11,8 +11,8 @@ namespace Me.Shishioko.Msdl.Data
             if (data == null) Data = new(4, 4096);
             else
             {
-                Contract.Requires(data.Bits == 4);
-                Contract.Requires(data.Length == 4096);
+                Contract.Assert(data.Bits == 4);
+                Contract.Assert(data.Length == 4096);
                 Data = data;
             }
         }
