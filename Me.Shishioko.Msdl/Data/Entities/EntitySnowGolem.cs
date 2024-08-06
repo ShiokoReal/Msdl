@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntitySnowGolem : EntityMob
     {
         internal override int Id => 96;
-        public override double Height => 1.9;
-        public override double Width => 0.7;
+        public override double HitboxHeight => 1.9;
+        public override double HitboxWidth => 0.7;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         private byte EntitySnowGolemFlags = 0x10;
         public bool Pumpkin
         {

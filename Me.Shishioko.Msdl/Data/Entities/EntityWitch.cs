@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntityWitch : EntityMob
     {
         internal override int Id => 118;
-        public override double Height => 1.95;
-        public override double Width => 0.6;
+        public override double HitboxHeight => 1.95;
+        public override double HitboxWidth => 0.6;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public bool Celebrating = false;
         public bool Drinking = false;
         public EntityWitch()

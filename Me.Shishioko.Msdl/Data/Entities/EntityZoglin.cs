@@ -3,8 +3,11 @@
     public sealed class EntityZoglin : EntityGrowable
     {
         internal override int Id => 123;
-        public override double Height => 1.4;
-        public override double Width => 1.3964844;
+        public override double HitboxHeight => 1.4;
+        public override double HitboxWidth => 1.3964844;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public EntityZoglin()
         {
 

@@ -21,8 +21,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
             Hovering = 10,
         }
         internal override int Id => 31;
-        public override double Height => 8.0;
-        public override double Width => 16.0;
+        public override double HitboxHeight => 8.0;
+        public override double HitboxWidth => 16.0;
+        public override bool HitboxSoftCollision => false;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public EntityEnderdragonPhase Phase = EntityEnderdragonPhase.Hovering;
         public EntityEnderdragon()
         {

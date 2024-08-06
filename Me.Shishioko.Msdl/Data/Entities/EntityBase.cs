@@ -26,8 +26,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
             Digging = 14,
         }
         internal abstract int Id { get; }
-        public abstract double Height { get; }
-        public abstract double Width { get; }
+        public abstract double HitboxHeight { get; }
+        public abstract double HitboxWidth { get; }
+        public abstract bool HitboxSoftCollision { get; }
+        public abstract bool HitboxHardCollision { get; }
+        public abstract bool HitboxAlign { get; }
         public virtual int InitialData => 0;
 
         private byte EntityBaseFlags = 0x00;

@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntityGhast : EntityMob
     {
         internal override int Id => 45;
-        public override double Height => 4;
-        public override double Width => 4;
+        public override double HitboxHeight => 4;
+        public override double HitboxWidth => 4;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public bool Charging = false;
         public EntityGhast()
         {

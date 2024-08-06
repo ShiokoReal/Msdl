@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntityWarden : EntityMob
     {
         internal override int Id => 116;
-        public override double Height => 2.9;
-        public override double Width => 0.9;
+        public override double HitboxHeight => 2.9;
+        public override double HitboxWidth => 0.9;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public int Anger = 0;
         public EntityWarden()
         {

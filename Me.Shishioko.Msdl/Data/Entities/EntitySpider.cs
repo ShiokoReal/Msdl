@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntitySpider : EntityMob
     {
         internal override int Id => 100;
-        public override double Height => 0.9;
-        public override double Width => 1.4;
+        public override double HitboxHeight => 0.9;
+        public override double HitboxWidth => 1.4;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public bool Climbing = false;
         public EntitySpider()
         {

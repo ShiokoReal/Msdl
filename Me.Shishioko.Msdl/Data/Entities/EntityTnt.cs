@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
@@ -8,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntityTnt : EntityBase
     {
         internal override int Id => 106;
-        public override double Height => 0.98;
-        public override double Width => 0.98;
+        public override double HitboxHeight => 0.98;
+        public override double HitboxWidth => 0.98;
+        public override bool HitboxSoftCollision => false;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public int Fuse = 80;
         public int Block = 2094; //TODO: tnt block id from block classes read to int
         public EntityTnt()

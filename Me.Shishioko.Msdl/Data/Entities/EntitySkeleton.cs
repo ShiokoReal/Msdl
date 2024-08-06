@@ -8,8 +8,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntitySkeleton : EntityMob
     {
         internal override int Id => 91;
-        public override double Height => 1.99;
-        public override double Width => 0.6;
+        public override double HitboxHeight => 1.99;
+        public override double HitboxWidth => 0.6;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public bool Transforming = false;
         public EntitySkeleton()
         {

@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntityAllay : EntityMob
     {
         internal override int Id => 0;
-        public override double Height => 0.6;
-        public override double Width => 0.35;
+        public override double HitboxHeight => 0.6;
+        public override double HitboxWidth => 0.35;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public bool Dancing = false;
         public bool Breedable = false;
         public EntityAllay()

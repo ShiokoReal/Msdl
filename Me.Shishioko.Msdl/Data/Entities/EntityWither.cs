@@ -7,8 +7,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
     public sealed class EntityWither : EntityMob
     {
         internal override int Id => 119;
-        public override double Height => 3.5;
-        public override double Width => 0.9;
+        public override double HitboxHeight => 3.5;
+        public override double HitboxWidth => 0.9;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public int CenterTargetEID = 0;
         public int LeftTargetEID = 0;
         public int RightTargetEID = 0;

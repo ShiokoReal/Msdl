@@ -54,8 +54,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
             }
         }
         internal override int Id => 128;
-        public override double Height => 1.8;
-        public override double Width => 0.6;
+        public override double HitboxHeight => 1.8;
+        public override double HitboxWidth => 0.6;
+        public override bool HitboxSoftCollision => true;
+        public override bool HitboxHardCollision => false;
+        public override bool HitboxAlign => false;
         public float Absorption = 0.0f;
         public int Score = 0;
         public EntityPlayerSkinMask SkinMask = new(0);
