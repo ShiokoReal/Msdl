@@ -204,13 +204,12 @@ namespace Me.Shishioko.Msdl.Test
                                 }
                             case "illusion":
                                 {
-                                    EntityEnderdragon entity = new()
+                                    EntityExperience entity = new()
                                     {
                                         Name = new ChatText(player.Name)
                                         {
                                             Color = Color.Crimson,
                                         },
-                                        NoAI = true,
                                         Invisible = true,
                                         //Pose = EntityBase.EntityPose.Sneaking,
                                         Gravitationless = true,
