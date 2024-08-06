@@ -4,7 +4,7 @@ using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityDragon : EntityMob
+    public sealed class EntityEnderDragon : EntityMob
     {
         public enum EntityEnderdragonPhase
         {
@@ -27,14 +27,14 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public override bool HitboxHardCollision => false;
         public override bool HitboxAlign => false;
         public EntityEnderdragonPhase Phase = EntityEnderdragonPhase.Hovering;
-        public EntityDragon()
+        public EntityEnderDragon()
         {
 
         }
         internal override void Serialize(Stream stream, EntityBase? rawDifference)
         {
             base.Serialize(stream, rawDifference);
-            EntityDragon? difference = rawDifference is EntityDragon castDifference ? castDifference : null;
+            EntityEnderDragon? difference = rawDifference is EntityEnderDragon castDifference ? castDifference : null;
             if (difference is not null ? difference.Phase != Phase : true)
             {
                 stream.WriteU8(16);
@@ -45,7 +45,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public override void Clone(EntityBase rawEntity)
         {
             base.Clone(rawEntity);
-            if (rawEntity is not EntityDragon entity) return;
+            if (rawEntity is not EntityEnderDragon entity) return;
             Phase = entity.Phase;
         }
     }
