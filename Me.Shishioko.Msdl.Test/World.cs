@@ -1,4 +1,5 @@
 ﻿using Me.Shishioko.Msdl.Data;
+using Net.Myzuc.ShioLib;
 using System.Collections.Concurrent;
 
 namespace Me.Shishioko.Msdl.Test
@@ -7,7 +8,7 @@ namespace Me.Shishioko.Msdl.Test
     {
         public readonly string Name;
         public readonly Game Game;
-        internal readonly Dimension Object; //TODO: readonly struct for biomes too
+        internal readonly Dimension Object; //TODO: class not struct
         internal readonly ConcurrentDictionary<Guid, Player> Players = [];
         internal readonly ConcurrentDictionary<(int x, int z), Chunk> Chunks = [];
         public World(Game game, Dimension dimension)
@@ -19,24 +20,41 @@ namespace Me.Shishioko.Msdl.Test
             {
                 for (int z = -4; z < 4; z++)
                 {
-                    Chunk chunk = new(x, z, this);
-                    for (int y = Object.Depth; y < Object.Depth + Object.Height; y++)
-                    {
-                        int block = 0;
-                        if (y < 64) block = 1;
-                        else if (y == 64) block = 2;
-                        else if (y <= 67) block = 95;
-                        for (int xx = 0; xx < 16; xx++)
-                        {
-                            for (int zz = 0; zz < 16; zz++)
-                            {
-                                chunk[xx, y, zz] = block;
-                            }
-                        }
-                    }
-                    Chunks.TryAdd((chunk.X, chunk.Z), chunk);
+                    Chunks.TryAdd((x, z), new(x, z, this));
                 }
             }
+        }
+        internal async Task SaveAsync(bool full)
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "save", Name.Replace(':', '.'));
+            Directory.CreateDirectory(path).Create();
+            using MemoryStream dataOut = new();
+            dataOut.WriteS32V(0);
+            dataOut.WriteS32V(Object.Height);
+            dataOut.WriteS32V(Object.Depth);
+            dataOut.WriteS32V((int)Object.Effects);
+            dataOut.WriteBool(Object.Natural);
+            dataOut.WriteBool(Object.HasSkylight);
+            dataOut.WriteF32(Object.AmbientLight);
+            using FileStream fileOut = new(Path.Combine(path, "info.bin"), FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+            await fileOut.WriteU8AAsync(dataOut.ToArray());
+            if (full) await Task.WhenAll(Chunks.Values.Select(chunk => chunk.SaveAsync()));
+        }
+        internal static async Task<World?> LoadAsync(Game game, string name)
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "save", name.Replace(':', '.'), "info.bin");
+            if (!File.Exists(path)) return null;
+            using FileStream dataIn = new(path, FileMode.Open, FileAccess.Read, FileShare.None);
+            int version = dataIn.ReadS32V();
+            World world = new(game, new(name, dataIn.ReadS32V(), dataIn.ReadS32V())
+            {
+                Effects = (Sky)dataIn.ReadS32V(),
+                Natural = dataIn.ReadBool(),
+                HasSkylight = dataIn.ReadBool(),
+                AmbientLight = dataIn.ReadF32()
+            });
+            await Task.WhenAll(world.Chunks.Values.Select(chunk => chunk.LoadAsync()));
+            return world;
         }
         public void SetBlock(int x, int y, int z, int id)
         {

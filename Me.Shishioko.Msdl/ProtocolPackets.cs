@@ -80,8 +80,10 @@
         public const int OutgoingPlayEntityRotation = 0x30;
         public const int OutgoingPlayTablistRemove = 0x3D;
         public const int OutgoingPlayTablistAction = 0x3E;
+        public const int OutgoingPlayPlayerPoint = 0x3F;
         public const int OutgoingPlayPlayerPosition = 0x40;
         public const int OutgoingPlayEntityRemove = 0x42;
+        public const int OutgoingPlayEffectRemove = 0x43;
         public const int OutgoingPlayEntityHead = 0x48;
         public const int OutgoingPlayHotbar = 0x53;
         public const int OutgoingPlayChunkCenter = 0x54;
@@ -90,7 +92,9 @@
         public const int OutgoingPlayConfigure = 0x69;
         public const int OutgoingPlayTime = 0x64;
         public const int OutgoingPlayChatSystem = 0x6C;
+        public const int OutgoingPlayTablistText = 0x6D;
         public const int OutgoingPlayEntityPositionFar = 0x70;
+        public const int OutgoingPlayEffectAdd = 0x76;
         public const int OutgoingPlayTags = 0x78;
     }
 }

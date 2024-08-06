@@ -35,7 +35,6 @@ namespace Me.Shishioko.Msdl.Test
             OriginPort = originPort;
 
             Color color = Color.FromArgb(id.GetHashCode() & 0xFFFFFF);
-            //Color color = Color.FromArgb(Random.Shared.Next() & 0xFFFFFF);
             DarkColor = Color.FromArgb(color.R / 2, color.G / 2, color.B / 2);
             MediumColor = Color.FromArgb(DarkColor.R + 64, DarkColor.G + 64, DarkColor.B + 64);
             LightColor = Color.FromArgb(DarkColor.R + 128, DarkColor.G + 128, DarkColor.B + 128);

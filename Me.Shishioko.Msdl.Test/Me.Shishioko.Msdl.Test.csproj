@@ -12,6 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Me.Shishioko.SJNetChat">
+      <HintPath>..\..\Me.Shishioko\Me.Shishioko.SJNetChat\bin\Release\net8.0\Me.Shishioko.SJNetChat.dll</HintPath>
+    </Reference>
     <Reference Include="Net.Myzuc.ShioLib">
       <HintPath>..\..\Net.Myzuc.ShioLib\bin\Release\net8.0\Net.Myzuc.ShioLib.dll</HintPath>
     </Reference>

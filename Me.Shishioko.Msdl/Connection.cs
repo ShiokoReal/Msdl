@@ -17,8 +17,8 @@ using System.Diagnostics.Contracts;
 using Me.Shishioko.Msdl.Data.Chat;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-using Me.Shishioko.Msdl.Data.Entity.Classes;
 using System.Threading;
+using Me.Shishioko.Msdl.Data.Entities;
 
 namespace Me.Shishioko.Msdl
 {
@@ -38,6 +38,7 @@ namespace Me.Shishioko.Msdl
         private string? DimensionName = null;
         private Biome[]? Biomes = null;
         //TODO: damage types?
+        private Gamemode Gamemode = Gamemode.Survival;
         private int EID = 0;
         private bool Hardcore = false;
         private bool RespawnScreen = false;
@@ -57,6 +58,7 @@ namespace Me.Shishioko.Msdl
         public Func<bool, Position, BlockFace, float, float, float, bool, Task> ReceiveInteractionBlockAsync = (bool offhanded, Position position, BlockFace face, float cursorX, float cursorY, float cursorZ, bool inside) => Task.CompletedTask;
         public Func<bool, Task> ReceiveSwingAsync = (bool offhanded) => Task.CompletedTask;
         public Func<PlayerAction, Task> ReceiveActionAsync = (PlayerAction action) => Task.CompletedTask;
+        public Func<Position, float, BlockFace, Task> ReceiveBreakAsync = (Position location, float progress, BlockFace face) => Task.CompletedTask;
         public Func<int, Task> ReceiveHotbarAsync = (int slot) => Task.CompletedTask;
         public Connection(Stream stream)
         {
@@ -683,22 +685,25 @@ namespace Me.Shishioko.Msdl
                             int type = packetIn.ReadS32V();
                             Position position = new(packetIn.ReadU64());
                             BlockFace face = (BlockFace)packetIn.ReadS8();
-                            int sequence = packetIn.ReadS32V();
+                            using MemoryStream packetOut = new();
+                            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayBlockFeedback);
+                            packetOut.WriteS32V(packetIn.ReadS32V());
+                            await SendAsync(packetOut.ToArray());
                             switch (type)
                             {
                                 case 0:
                                     {
-                                        //TODO:
+                                        await ReceiveBreakAsync(position, Gamemode == Gamemode.Creative ? 1.0f : 0.0f, face);
                                         break;
                                     }
                                 case 1:
                                     {
-                                        //TODO:
+                                        await ReceiveBreakAsync(position, -1.0f, face);
                                         break;
                                     }
                                 case 2:
                                     {
-                                        //TODO:
+                                        await ReceiveBreakAsync(position, Gamemode == Gamemode.Spectator ? 0.0f : 1.0f, face);
                                         break;
                                     }
                                 case 3:
@@ -892,6 +897,17 @@ namespace Me.Shishioko.Msdl
             }
             return SendAsync(packetOut.ToArray());
         }
+        public Task SendTablistText(ChatComponent header, ChatComponent footer)
+        {
+            Contract.Assert(State == ProtocolState.Play);
+            using MemoryStream packetOut = new();
+            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayTablistText);
+            packetOut.WriteU8(0x0A);
+            header.Serialize(packetOut);
+            packetOut.WriteU8(0x0A);
+            footer.Serialize(packetOut);
+            return SendAsync(packetOut.ToArray());
+        }
         public Task SendChatSystemAsync(ChatComponent message)
         {
             Contract.Assert(State == ProtocolState.Play);
@@ -927,7 +943,7 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteS32V(Array.IndexOf(DimensionTypes!, DimensionType = dimensionType));
             packetOut.WriteString(DimensionName = dimensionName, SizePrefix.S32V);
             packetOut.WriteU64(seedHash);
-            packetOut.WriteU8((byte)currentGamemode);
+            packetOut.WriteU8((byte)(Gamemode = currentGamemode));
             packetOut.WriteS8(previousGamemode.HasValue ? (sbyte)previousGamemode.Value : (sbyte)-1);
             packetOut.WriteBool(false);
             packetOut.WriteBool(flatWorld);
@@ -1287,7 +1303,7 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteS32V(id);
             return SendAsync(packetOut.ToArray());
         }
-        public Task SendEntityAddAsync(int eid, Guid id, EntityClassBase entity, double x, double y, double z, float pitch, float yaw, float headYaw)
+        public Task SendEntityAddAsync(int eid, Guid id, EntityBase entity, double x, double y, double z, float pitch, float yaw, float headYaw)
         {
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
@@ -1392,7 +1408,7 @@ namespace Me.Shishioko.Msdl
                 await SendAsync(packetOut.ToArray());
             }
         }
-        public Task SendEntityDataAsync(int eid, EntityClassBase entity, EntityClassBase? previous = null)
+        public Task SendEntityDataAsync(int eid, EntityBase entity, EntityBase? previous = null)
         {
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
@@ -1402,7 +1418,34 @@ namespace Me.Shishioko.Msdl
             entity.Serialize(packetOut, previous);
             packetOut.WriteU8(0xFF);
             return SendAsync(packetOut.ToArray());
-
+        }
+        public Task SendEffectAddAsync(int eid, Effect effect, int level, int duration, bool beacon, bool particles, bool icon, bool blend)
+        {
+            Contract.Assert(State == ProtocolState.Play);
+            Contract.Assert(DimensionName is not null);
+            using MemoryStream packetOut = new();
+            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEffectAdd);
+            packetOut.WriteS32V(eid);
+            packetOut.WriteS32V((int)effect);
+            packetOut.WriteS32V(level);
+            packetOut.WriteS32V(duration);
+            byte flags = 0x00;
+            if (beacon) flags |= 0x01;
+            if (particles) flags |= 0x02;
+            if (icon) flags |= 0x04;
+            if (blend) flags |= 0x08;
+            packetOut.WriteU8(flags);
+            return SendAsync(packetOut.ToArray());
+        }
+        public Task SendEffectRemoveAsync(int eid, Effect effect)
+        {
+            Contract.Assert(State == ProtocolState.Play);
+            Contract.Assert(DimensionName is not null);
+            using MemoryStream packetOut = new();
+            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEffectRemove);
+            packetOut.WriteS32V(eid);
+            packetOut.WriteS32V((int)effect);
+            return SendAsync(packetOut.ToArray());
         }
         public Task SendHotbarAsync(int slot)
         {
@@ -1465,6 +1508,34 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteF32(pitch);
             packetOut.WriteU8(0);
             packetOut.WriteS32V(id);
+            return SendAsync(packetOut.ToArray());
+        }
+        public Task SendPlayerPointBlockAsync(double x, double y, double z, bool eyes)
+        {
+            Contract.Assert(State == ProtocolState.Play);
+            Contract.Assert(DimensionName is not null);
+            using MemoryStream packetOut = new();
+            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayPlayerPoint);
+            packetOut.WriteS32V(eyes ? 1 : 0);
+            packetOut.WriteF64(x);
+            packetOut.WriteF64(y);
+            packetOut.WriteF64(z);
+            packetOut.WriteBool(false);
+            return SendAsync(packetOut.ToArray());
+        }
+        public Task SendPlayerPointEntityAsync(double x, double y, double z, bool eyes, int eid, bool entityEyes)
+        {
+            Contract.Assert(State == ProtocolState.Play);
+            Contract.Assert(DimensionName is not null);
+            using MemoryStream packetOut = new();
+            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayPlayerPoint);
+            packetOut.WriteS32V(eyes ? 1 : 0);
+            packetOut.WriteF64(x);
+            packetOut.WriteF64(y);
+            packetOut.WriteF64(z);
+            packetOut.WriteBool(true);
+            packetOut.WriteS32V(eid);
+            packetOut.WriteS32V(entityEyes ? 1 : 0);
             return SendAsync(packetOut.ToArray());
         }
         private async Task ListenAsync()

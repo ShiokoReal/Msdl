@@ -1,6 +1,5 @@
 ﻿using Me.Shishioko.Msdl.Data;
 using Me.Shishioko.Msdl.Data.Chat;
-using Net.Myzuc.ShioLib;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
@@ -12,6 +11,7 @@ namespace Me.Shishioko.Msdl.Test
         private static readonly Game Game = new();
         private static async Task Main()
         {
+            await Game.LoadAsync();
             using Socket listener = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             listener.Bind(new IPEndPoint(IPAddress.Any, 4647));
             listener.Listen();
