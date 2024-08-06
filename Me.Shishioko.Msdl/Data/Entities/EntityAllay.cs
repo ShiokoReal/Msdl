@@ -22,13 +22,13 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Dancing != Dancing : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Dancing);
             }
             if (difference is not null ? difference.Breedable != Breedable : true)
             {
                 stream.WriteU8(17);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Breedable);
             }
         }

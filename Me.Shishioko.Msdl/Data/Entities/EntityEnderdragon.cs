@@ -35,7 +35,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Phase != Phase : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V((int)Phase);
             }
         }

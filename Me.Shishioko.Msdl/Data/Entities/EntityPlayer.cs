@@ -72,25 +72,25 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Score != Score : true)
             {
                 stream.WriteU8(15);
-                stream.WriteS32V(MetadataType.F32);
+                stream.WriteU8(MetadataType.F32);
                 stream.WriteF32(Absorption);
             }
             if (difference is not null ? difference.Score != Score : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Score);
             }
             if (difference is not null ? difference.SkinMask.Mask != SkinMask.Mask : true)
             {
                 stream.WriteU8(17);
-                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(MetadataType.Byte);
                 stream.WriteU8(SkinMask.Mask);
             }
             if (difference is not null ? difference.Righthanded != Righthanded : true)
             {
                 stream.WriteU8(18);
-                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(MetadataType.Byte);
                 stream.WriteBool(Righthanded);
             }
         }

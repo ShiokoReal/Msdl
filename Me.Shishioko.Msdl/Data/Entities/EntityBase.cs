@@ -110,19 +110,19 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.EntityBaseFlags != EntityBaseFlags : true)
             {
                 stream.WriteU8(0);
-                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(MetadataType.Byte);
                 stream.WriteU8(EntityBaseFlags);
             }
             if (difference is not null ? difference.Air != Air : true)
             {
                 stream.WriteU8(1);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Air);
             }
             if (difference is not null ? difference.Name != Name : true)
             {
                 stream.WriteU8(2);
-                stream.WriteS32V(MetadataType.ChatComponentN);
+                stream.WriteU8(MetadataType.ChatComponentN);
                 stream.WriteBool(Name is not null);
                 if (Name is not null)
                 {
@@ -133,31 +133,31 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.NameVisibility != NameVisibility : true)
             {
                 stream.WriteU8(3);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(NameVisibility);
             }
             if (difference is not null ? difference.Silent != Silent : true)
             {
                 stream.WriteU8(4);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Silent);
             }
             if (difference is not null ? difference.Gravitationless != Gravitationless : true)
             {
                 stream.WriteU8(5);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Gravitationless);
             }
             if (difference is not null ? difference.Pose != Pose : true)
             {
                 stream.WriteU8(6);
-                stream.WriteS32V(MetadataType.EntityBasePose);
+                stream.WriteU8(MetadataType.EntityBasePose);
                 stream.WriteS32V((int)Pose);
             }
             if (difference is not null ? difference.Freeze != Freeze : true)
             {
                 stream.WriteU8(7);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Freeze);
             }
         }

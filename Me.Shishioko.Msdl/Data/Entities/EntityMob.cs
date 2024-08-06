@@ -45,7 +45,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.EntityMobFlags != EntityMobFlags : true)
             {
                 stream.WriteU8(15);
-                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(MetadataType.Byte);
                 stream.WriteU8(EntityMobFlags);
             }
         }

@@ -24,25 +24,25 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.CenterTargetEID != CenterTargetEID : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(CenterTargetEID);
             }
             if (difference is not null ? difference.LeftTargetEID != LeftTargetEID : true)
             {
                 stream.WriteU8(17);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(LeftTargetEID);
             }
             if (difference is not null ? difference.RightTargetEID != RightTargetEID : true)
             {
                 stream.WriteU8(18);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(RightTargetEID);
             }
             if (difference is not null ? difference.Invulnerability != Invulnerability : true)
             {
                 stream.WriteU8(19);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Invulnerability);
             }
         }

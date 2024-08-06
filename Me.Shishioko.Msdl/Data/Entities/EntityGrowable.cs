@@ -18,7 +18,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Baby != Baby : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Baby);
             }
         }

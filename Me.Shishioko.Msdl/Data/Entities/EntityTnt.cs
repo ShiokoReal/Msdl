@@ -23,13 +23,13 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Fuse != Fuse : true)
             {
                 stream.WriteU8(8);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Fuse);
             }
             if (difference is not null ? difference.Block != Block : true)
             {
                 stream.WriteU8(9);
-                stream.WriteS32V(MetadataType.BlockId);
+                stream.WriteU8(MetadataType.BlockId);
                 stream.WriteS32V(Block);
             }
         }

@@ -22,13 +22,13 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Celebrating != Celebrating : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Celebrating);
             }
             if (difference is not null ? difference.Drinking != Drinking : true)
             {
                 stream.WriteU8(17);
-                stream.WriteS32V(MetadataType.Bool);
+                stream.WriteU8(MetadataType.Bool);
                 stream.WriteBool(Drinking);
             }
         }

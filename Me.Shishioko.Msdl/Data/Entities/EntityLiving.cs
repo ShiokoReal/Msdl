@@ -51,13 +51,13 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.EntityLivingFlags != EntityLivingFlags : true)
             {
                 stream.WriteU8(8);
-                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(MetadataType.Byte);
                 stream.WriteU8(EntityLivingFlags);
             }
             if (difference is not null ? difference.Health != Health : true)
             {
                 stream.WriteU8(9);
-                stream.WriteS32V(MetadataType.F32);
+                stream.WriteU8(MetadataType.F32);
                 stream.WriteF32(Health);
             }
             /*if (difference is not null ? difference.PotionEffect != PotionEffect : true)
@@ -72,19 +72,19 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Arrows != Arrows : true)
             {
                 stream.WriteU8(12);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Arrows);
             }
             if (difference is not null ? difference.Stingers != Stingers : true)
             {
                 stream.WriteU8(13);
-                stream.WriteS32V(MetadataType.S32V);
+                stream.WriteU8(MetadataType.S32V);
                 stream.WriteS32V(Stingers);
             }
             if (difference is not null ? difference.SleepingLocation != SleepingLocation : true)
             {
                 stream.WriteU8(14);
-                stream.WriteS32V(MetadataType.LocatonN);
+                stream.WriteU8(MetadataType.LocatonN);
                 stream.WriteBool(SleepingLocation.HasValue);
                 if (SleepingLocation.HasValue) stream.WriteU64(SleepingLocation.Value.Data);
             }

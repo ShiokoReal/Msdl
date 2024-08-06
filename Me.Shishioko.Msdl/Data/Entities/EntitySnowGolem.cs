@@ -30,7 +30,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.EntitySnowGolemFlags != EntitySnowGolemFlags : true)
             {
                 stream.WriteU8(16);
-                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(MetadataType.Byte);
                 stream.WriteU8(EntitySnowGolemFlags);
             }
         }
