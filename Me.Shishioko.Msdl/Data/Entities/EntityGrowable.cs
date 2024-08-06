@@ -1,4 +1,5 @@
-﻿using Net.Myzuc.ShioLib;
+﻿using Me.Shishioko.Msdl.Data.Protocol;
+using Net.Myzuc.ShioLib;
 using System.IO;
 
 namespace Me.Shishioko.Msdl.Data.Entities
@@ -17,9 +18,15 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Baby != Baby : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(8);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Baby);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityGrowable entity) return;
+            Baby = entity.Baby;
         }
     }
 }

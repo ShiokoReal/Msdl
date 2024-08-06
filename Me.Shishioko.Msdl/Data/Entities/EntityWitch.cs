@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityWitch : EntityMob
     {
-        public override int Id => 118;
+        internal override int Id => 118;
         public override double Height => 1.95;
         public override double Width => 0.6;
         public bool Celebrating = false;
@@ -21,15 +22,22 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Celebrating != Celebrating : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(8);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Celebrating);
             }
             if (difference is not null ? difference.Drinking != Drinking : true)
             {
                 stream.WriteU8(17);
-                stream.WriteU8(8);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Drinking);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityWitch entity) return;
+            Celebrating = entity.Celebrating;
+            Drinking = entity.Drinking;
         }
     }
 }

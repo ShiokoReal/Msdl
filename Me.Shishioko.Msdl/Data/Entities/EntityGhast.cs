@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityGhast : EntityMob
     {
-        public override int Id => 45;
+        internal override int Id => 45;
         public override double Height => 4;
         public override double Width => 4;
         public bool Charging = false;
@@ -20,9 +21,15 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Charging != Charging : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(8);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Charging);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityGhast entity) return;
+            Charging = entity.Charging;
         }
     }
 }

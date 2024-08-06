@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityEnderdragon : EntityMob
     {
-        public enum DragonPhase
+        public enum EntityEnderdragonPhase
         {
             Circling = 0,
             Strafing = 1,
@@ -19,10 +20,10 @@ namespace Me.Shishioko.Msdl.Data.Entities
             Dying = 9,
             Hovering = 10,
         }
-        public override int Id => 31;
+        internal override int Id => 31;
         public override double Height => 8.0;
         public override double Width => 16.0;
-        public DragonPhase Phase = DragonPhase.Hovering;
+        public EntityEnderdragonPhase Phase = EntityEnderdragonPhase.Hovering;
         public EntityEnderdragon()
         {
 
@@ -34,9 +35,15 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Phase != Phase : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(1);
+                stream.WriteS32V(MetadataType.S32V);
                 stream.WriteS32V((int)Phase);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityEnderdragon entity) return;
+            Phase = entity.Phase;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using Me.Shishioko.Msdl.Data.Entities;
 
 namespace Me.Shishioko.Msdl.Data
 {
@@ -8,10 +8,10 @@ namespace Me.Shishioko.Msdl.Data
         public readonly byte RenderDistance;
         public readonly ChatMode ChatMode;
         public readonly bool ChatColors;
-        public readonly SkinMask SkinMask;
+        public readonly EntityPlayer.EntityPlayerSkinMask SkinMask;
         public readonly bool RightHanded;
         public readonly bool Listing;
-        internal Preferences(string language, byte renderDistance, ChatMode chatMode, bool chatColors, SkinMask skinMask, bool rightHanded, bool listing)
+        internal Preferences(string language, byte renderDistance, ChatMode chatMode, bool chatColors, EntityPlayer.EntityPlayerSkinMask skinMask, bool rightHanded, bool listing)
         {
             Language = language;
             RenderDistance = renderDistance;

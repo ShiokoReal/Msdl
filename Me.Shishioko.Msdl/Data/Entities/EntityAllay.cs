@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityAllay : EntityMob
     {
-        public override int Id => 0;
+        internal override int Id => 0;
         public override double Height => 0.6;
         public override double Width => 0.35;
         public bool Dancing = false;
@@ -21,15 +22,22 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Dancing != Dancing : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(8);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Dancing);
             }
             if (difference is not null ? difference.Breedable != Breedable : true)
             {
-                stream.WriteU8(16);
-                stream.WriteU8(8);
+                stream.WriteU8(17);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Breedable);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityAllay entity) return;
+            Dancing = entity.Dancing;
+            Breedable = entity.Breedable;
         }
     }
 }

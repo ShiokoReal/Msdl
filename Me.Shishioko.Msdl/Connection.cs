@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Me.Shishioko.Msdl.Data.Entities;
+using Me.Shishioko.Msdl.Data.Protocol;
 
 namespace Me.Shishioko.Msdl
 {
@@ -73,15 +74,15 @@ namespace Me.Shishioko.Msdl
                     if (State == ProtocolState.Login)
                     {
                         using MemoryStream packetOut = new();
-                        packetOut.WriteS32V(ProtocolPackets.OutgoingLoginDisconnect);
+                        packetOut.WriteS32V(Packets.OutgoingLoginDisconnect);
                         packetOut.WriteString(message.TextSerialize(), SizePrefix.S32V, 262144);
                         await SendAsync(packetOut.ToArray());
                     }
                     else if (State == ProtocolState.Configuration || State == ProtocolState.Play)
                     {
                         using MemoryStream packetOut = new();
-                        if (State == ProtocolState.Configuration) packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationDisconnect);
-                        else packetOut.WriteS32V(ProtocolPackets.OutgoingPlayDisconnect);
+                        if (State == ProtocolState.Configuration) packetOut.WriteS32V(Packets.OutgoingConfigurationDisconnect);
+                        else packetOut.WriteS32V(Packets.OutgoingPlayDisconnect);
                         packetOut.WriteU8(0x0A);
                         message.Serialize(packetOut);
                         await SendAsync(packetOut.ToArray());
@@ -97,7 +98,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Handshake);
             using MemoryStream packetIn = new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingHandshakeHandshake) throw new ProtocolViolationException("Expected handshake packet");
+            if (packetIn.ReadS32V() != Packets.IncomingHandshakeHandshake) throw new ProtocolViolationException("Expected handshake packet");
             int version = packetIn.ReadS32V();
             string address = packetIn.ReadString(SizePrefix.S32V);
             ushort port = packetIn.ReadU16();
@@ -112,9 +113,9 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Status);
             using MemoryStream packetIn = new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingStatusStatusRequest) return false;
+            if (packetIn.ReadS32V() != Packets.IncomingStatusStatusRequest) return false;
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingStatusStatusResponse);
+            packetOut.WriteS32V(Packets.OutgoingStatusStatusResponse);
             packetOut.WriteString(status.TextSerialize(), SizePrefix.S32V);
             await SendAsync(packetOut.ToArray());
             return true;
@@ -123,9 +124,9 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Status);
             using MemoryStream packetIn = new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingStatusPingRequest) return false;
+            if (packetIn.ReadS32V() != Packets.IncomingStatusPingRequest) return false;
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingStatusPingResponse);
+            packetOut.WriteS32V(Packets.OutgoingStatusPingResponse);
             packetOut.WriteU64(packetIn.ReadU64());
             await SendAsync(packetOut.ToArray());
             return true;
@@ -135,14 +136,14 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Login);
             using MemoryStream packetIn = new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingLoginStart) throw new ProtocolViolationException();
+            if (packetIn.ReadS32V() != Packets.IncomingLoginStart) throw new ProtocolViolationException();
             return (packetIn.ReadString(SizePrefix.S32V), packetIn.ReadGuid());
         }
         public Task SendDisconnectAsync(ChatComponent message)
         {
             Contract.Assert(State == ProtocolState.Login);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingLoginDisconnect);
+            packetOut.WriteS32V(Packets.OutgoingLoginDisconnect);
             packetOut.WriteString(message.TextSerialize(), SizePrefix.S32V);
             return SendAsync(packetOut.ToArray());
         }
@@ -155,7 +156,7 @@ namespace Me.Shishioko.Msdl
             using RSA rsa = RSA.Create();
             using (MemoryStream packetOut = new())
             {
-                packetOut.WriteS32V(ProtocolPackets.OutgoingLoginEncryptionRequest);
+                packetOut.WriteS32V(Packets.OutgoingLoginEncryptionRequest);
                 packetOut.WriteString(server, SizePrefix.S32V);
                 packetOut.WriteU8A(rsa.ExportSubjectPublicKeyInfo(), SizePrefix.S32V);
                 packetOut.WriteU8A(verify, SizePrefix.S32V);
@@ -163,7 +164,7 @@ namespace Me.Shishioko.Msdl
                 await SendAsync(packetOut.ToArray());
             }
             using MemoryStream packetIn = new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingLoginEncryptionResponse) throw new ProtocolViolationException();
+            if (packetIn.ReadS32V() != Packets.IncomingLoginEncryptionResponse) throw new ProtocolViolationException();
             byte[] secret = rsa.Decrypt(packetIn.ReadU8A(SizePrefix.S32V), RSAEncryptionPadding.Pkcs1);
             if (!rsa.Decrypt(packetIn.ReadU8A(SizePrefix.S32V), RSAEncryptionPadding.Pkcs1).SequenceEqual(verify)) throw new ProtocolViolationException();
             Stream = new AesCfbStream(Stream, secret, secret, false);
@@ -188,7 +189,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Login);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingLoginCompression);
+            packetOut.WriteS32V(Packets.OutgoingLoginCompression);
             packetOut.WriteS32V(compressionThreshold);
             Task task = SendAsync(packetOut.ToArray());
             CompressionThreshold = compressionThreshold;
@@ -199,13 +200,13 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Login);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingLoginPluginRequest);
+            packetOut.WriteS32V(Packets.OutgoingLoginPluginRequest);
             packetOut.WriteS32V(0);
             packetOut.WriteString(channel, SizePrefix.S32V);
             packetOut.WriteU8A(data);
             await SendAsync(packetOut.ToArray());
             using MemoryStream packetIn = new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingLoginPluginResponse) throw new ProtocolViolationException();
+            if (packetIn.ReadS32V() != Packets.IncomingLoginPluginResponse) throw new ProtocolViolationException();
             if (packetIn.ReadS32V() != 0) throw new ProtocolViolationException();
             if (packetIn.ReadString(SizePrefix.S32V) != channel) throw new ProtocolViolationException();
             return packetIn.ReadU8A((int)(packetIn.Length - packetIn.Position));
@@ -215,7 +216,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Login);
             Contract.Assert(name.Length <= 16);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingLoginSuccess);
+            packetOut.WriteS32V(Packets.OutgoingLoginSuccess);
             packetOut.WriteGuid(guid);
             packetOut.WriteString(name, SizePrefix.S32V);
             packetOut.WriteS32V(properties.Length);
@@ -229,7 +230,7 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteBool(true);
             await SendAsync(packetOut.ToArray());
             using MemoryStream packetIn =new(await ReceiveAsync());
-            if (packetIn.ReadS32V() != ProtocolPackets.IncomingLoginEnd) throw new ProtocolViolationException();
+            if (packetIn.ReadS32V() != Packets.IncomingLoginEnd) throw new ProtocolViolationException();
             State = ProtocolState.Configuration;
             _ = ListenAsync();
         }
@@ -247,25 +248,25 @@ namespace Me.Shishioko.Msdl
                 using MemoryStream packetIn = new(packetDataIn);
                 switch (packetIn.ReadS32V())
                 {
-                    case ProtocolPackets.IncomingConfigurationInformation:
+                    case Packets.IncomingConfigurationInformation:
                         {
                             string language = packetIn.ReadString(SizePrefix.S32V, 16);
                             byte renderDistance = packetIn.ReadU8();
                             ChatMode chatMode = (ChatMode)packetIn.ReadS32V();
                             bool chatColors = packetIn.ReadBool();
-                            SkinMask skinMask = new(packetIn.ReadU8());
+                            EntityPlayer.EntityPlayerSkinMask skinMask = new(packetIn.ReadU8());
                             bool rightHanded = packetIn.ReadS32V() == 0 ? false : true;
                             packetIn.ReadBool();
                             bool listing = packetIn.ReadBool();
                             await ReceivePreferencesAsync(new(language, renderDistance, chatMode, chatColors, skinMask, rightHanded, listing));
                             break;
                         }
-                    case ProtocolPackets.IncomingConfigurationCookieResponse:
+                    case Packets.IncomingConfigurationCookieResponse:
                         {
                             //TODO:
                             break;
                         }
-                    case ProtocolPackets.IncomingConfigurationPluginMessage:
+                    case Packets.IncomingConfigurationPluginMessage:
                         {
                             string channel = packetIn.ReadString(SizePrefix.S32V);
                             if (!Connection.NamespaceRegex().IsMatch(channel)) throw new ProtocolViolationException();
@@ -273,12 +274,12 @@ namespace Me.Shishioko.Msdl
                             await ReceiveConfigurationMessageAsync(channel, data);
                             break;
                         }
-                    case ProtocolPackets.IncomingConfigurationEnd:
+                    case Packets.IncomingConfigurationEnd:
                         {
                             State = ProtocolState.Play; //TODO: check if expected
                             return;
                         }
-                    case ProtocolPackets.IncomingConfigurationHeartbeat:
+                    case Packets.IncomingConfigurationHeartbeat:
                         {
                             await ReceiveHeartbeatAsync(packetIn.ReadS64());
                             break;
@@ -296,7 +297,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(dimensionTypes.Length > 0);
             DimensionTypes = dimensionTypes;
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+            packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
             packetOut.WriteString("minecraft:dimension_type", SizePrefix.S32V);
             packetOut.WriteS32V(DimensionTypes.Length);
             for (int i = 0; i < DimensionTypes.Length; i++)
@@ -371,7 +372,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(biomes.Length > 0);
             Biomes = biomes;
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+            packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
             packetOut.WriteString("minecraft:worldgen/biome", SizePrefix.S32V);
             packetOut.WriteS32V(Biomes.Length);
             for(int i = 0; i < Biomes.Length; i++)
@@ -498,42 +499,42 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Configuration);
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+                packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
                 packetOut.WriteString("minecraft:trim_pattern", SizePrefix.S32V);
                 packetOut.WriteS32V(0);
                 await SendAsync(packetOut.ToArray());
             }
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+                packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
                 packetOut.WriteString("minecraft:trim_material", SizePrefix.S32V);
                 packetOut.WriteS32V(0);
                 await SendAsync(packetOut.ToArray());
             }
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+                packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
                 packetOut.WriteString("minecraft:chat_type", SizePrefix.S32V);
                 packetOut.WriteS32V(0);
                 await SendAsync(packetOut.ToArray());
             }
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+                packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
                 packetOut.WriteString("minecraft:worldgen/biome", SizePrefix.S32V);
                 packetOut.WriteS32V(0);
                 await SendAsync(packetOut.ToArray());
             }
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+                packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
                 packetOut.WriteString("minecraft:wolf_variant", SizePrefix.S32V);
                 packetOut.WriteS32V(0);
                 await SendAsync(packetOut.ToArray());
             }
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+                packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
                 packetOut.WriteString("minecraft:banner_pattern", SizePrefix.S32V);
                 packetOut.WriteS32V(0);
                 await SendAsync(packetOut.ToArray());
@@ -543,7 +544,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Configuration);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationRegistry);
+            packetOut.WriteS32V(Packets.OutgoingConfigurationRegistry);
             packetOut.WriteString("minecraft:damage_type", SizePrefix.S32V);
             string[] damages = [
             "minecraft:generic_kill",
@@ -601,7 +602,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Configuration || State == ProtocolState.Play);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(State == ProtocolState.Configuration ? ProtocolPackets.OutgoingConfigurationTags : ProtocolPackets.OutgoingPlayTags);
+            packetOut.WriteS32V(State == ProtocolState.Configuration ? Packets.OutgoingConfigurationTags : Packets.OutgoingPlayTags);
             packetOut.WriteS32V(1);
             packetOut.WriteString("minecraft:fluid", SizePrefix.S32V);
             packetOut.WriteS32V(2);
@@ -623,7 +624,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Configuration);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingConfigurationEnd);
+            packetOut.WriteS32V(Packets.OutgoingConfigurationEnd);
             return SendAsync(packetOut.ToArray());
         }
         public async Task ProcessPlayAsync()
@@ -640,7 +641,7 @@ namespace Me.Shishioko.Msdl
                 using MemoryStream packetIn = new(packetDataIn);
                 if (State == ProtocolState.PlayToConfiguration)
                 {
-                    if (packetIn.ReadS32V() == ProtocolPackets.IncomingPlayConfigure)
+                    if (packetIn.ReadS32V() == Packets.IncomingPlayConfigure)
                     {
                         State = ProtocolState.Configuration;
                         return;
@@ -649,22 +650,22 @@ namespace Me.Shishioko.Msdl
                 }
                 switch (packetIn.ReadS32V())
                 {
-                    case ProtocolPackets.IncomingPlayChat:
+                    case Packets.IncomingPlayChat:
                         {
                             await ReceiveChatAsync(packetIn.ReadString(SizePrefix.S32V, 256));
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayCommand:
+                    case Packets.IncomingPlayCommand:
                         {
                             await ReceiveCommandAsync(packetIn.ReadString(SizePrefix.S32V, 256));
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayHeartbeat:
+                    case Packets.IncomingPlayHeartbeat:
                         {
                             await ReceiveHeartbeatAsync(packetIn.ReadS64());
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayInteractionBlock:
+                    case Packets.IncomingPlayInteractionBlock:
                         {
                             bool offhanded = packetIn.ReadS32V() == 0 ? false : true;
                             Position position = new(packetIn.ReadU64());
@@ -674,19 +675,19 @@ namespace Me.Shishioko.Msdl
                             float cursorZ = packetIn.ReadF32();
                             bool inside = packetIn.ReadBool();
                             using MemoryStream packetOut = new();
-                            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayBlockFeedback);
+                            packetOut.WriteS32V(Packets.OutgoingPlayBlockFeedback);
                             packetOut.WriteS32V(packetIn.ReadS32V());
                             await SendAsync(packetOut.ToArray());
                             await ReceiveInteractionBlockAsync(offhanded, position, face, cursorX, cursorY, cursorZ, inside);
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayActionGeneric:
+                    case Packets.IncomingPlayActionGeneric:
                         {
                             int type = packetIn.ReadS32V();
                             Position position = new(packetIn.ReadU64());
                             BlockFace face = (BlockFace)packetIn.ReadS8();
                             using MemoryStream packetOut = new();
-                            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayBlockFeedback);
+                            packetOut.WriteS32V(Packets.OutgoingPlayBlockFeedback);
                             packetOut.WriteS32V(packetIn.ReadS32V());
                             await SendAsync(packetOut.ToArray());
                             switch (type)
@@ -729,7 +730,7 @@ namespace Me.Shishioko.Msdl
                             }
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayActionMovement:
+                    case Packets.IncomingPlayActionMovement:
                         {
                             if (packetIn.ReadS32V() != EID) throw new ProtocolViolationException();
                             int type = packetIn.ReadS32V();
@@ -784,35 +785,35 @@ namespace Me.Shishioko.Msdl
                             }
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayHotbar:
+                    case Packets.IncomingPlayHotbar:
                         {
                             int slot = packetIn.ReadS16();
                             if (slot < 0 || slot >= 9) throw new ProtocolViolationException();
                             await ReceiveHotbarAsync(slot);
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayLocation:
+                    case Packets.IncomingPlayLocation:
                         {
                             await ReceiveLocationAsync(packetIn.ReadF64(), packetIn.ReadF64(), packetIn.ReadF64());
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayPosition:
+                    case Packets.IncomingPlayPosition:
                         {
                             await ReceiveLocationAsync(packetIn.ReadF64(), packetIn.ReadF64(), packetIn.ReadF64());
                             await ReceiveRotationAsync(packetIn.ReadF32(), packetIn.ReadF32());
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayRotation:
+                    case Packets.IncomingPlayRotation:
                         {
                             await ReceiveRotationAsync(packetIn.ReadF32(), packetIn.ReadF32());
                             break;
                         }
-                    case ProtocolPackets.IncomingPlaySwing:
+                    case Packets.IncomingPlaySwing:
                         {
                             await ReceiveSwingAsync(packetIn.ReadS32V() == 0 ? false : true);
                             break;
                         }
-                    case ProtocolPackets.IncomingPlayConfigure:
+                    case Packets.IncomingPlayConfigure:
                         {
                             throw new ProtocolViolationException();
                         }
@@ -828,7 +829,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Play);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayConfigure);
+            packetOut.WriteS32V(Packets.OutgoingPlayConfigure);
             State = ProtocolState.PlayToConfiguration;
             return SendAsync(packetOut.ToArray());
         }
@@ -836,7 +837,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Play || State == ProtocolState.Configuration);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(State == ProtocolState.Play ? ProtocolPackets.OutgoingPlayHeartbeat : ProtocolPackets.OutgoingConfigurationHeartbeat);
+            packetOut.WriteS32V(State == ProtocolState.Play ? Packets.OutgoingPlayHeartbeat : Packets.OutgoingConfigurationHeartbeat);
             packetOut.WriteS64(id);
             return SendAsync(packetOut.ToArray());
         }
@@ -849,7 +850,7 @@ namespace Me.Shishioko.Msdl
             if (latency is not null) Contract.Assert(latency.Length == id.Length);
             if (display is not null) Contract.Assert(display.Length == id.Length);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayTablistAction);
+            packetOut.WriteS32V(Packets.OutgoingPlayTablistAction);
             packetOut.WriteU8((byte)((additions is not null ? 0x01 : 0x00) | (gamemode is not null ? 0x04 : 0x00) | (visibility is not null ? 0x08 : 0x00) | (latency is not null ? 0x10 : 0x00) | (display is not null ? 0x20 : 0x00)));
             packetOut.WriteS32V(id.Length);
             for (int i = 0; i < id.Length; i++)
@@ -889,7 +890,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Play);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayTablistRemove);
+            packetOut.WriteS32V(Packets.OutgoingPlayTablistRemove);
             packetOut.WriteS32V(id.Length);
             for (int i = 0; i < id.Length; i++)
             {
@@ -901,7 +902,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Play);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayTablistText);
+            packetOut.WriteS32V(Packets.OutgoingPlayTablistText);
             packetOut.WriteU8(0x0A);
             header.Serialize(packetOut);
             packetOut.WriteU8(0x0A);
@@ -912,7 +913,7 @@ namespace Me.Shishioko.Msdl
         {
             Contract.Assert(State == ProtocolState.Play);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayChatSystem);
+            packetOut.WriteS32V(Packets.OutgoingPlayChatSystem);
             packetOut.WriteU8(0x0A);
             message.Serialize(packetOut);
             packetOut.WriteBool(false);
@@ -929,7 +930,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(dimensionNames!.Contains(dimensionName));
             DimensionNames = dimensionNames;
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayStart);
+            packetOut.WriteS32V(Packets.OutgoingPlayStart);
             packetOut.WriteS32(EID = entityID);
             packetOut.WriteBool(Hardcore = hardcore);
             packetOut.WriteS32V(DimensionNames!.Length);
@@ -963,7 +964,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayTime);
+            packetOut.WriteS32V(Packets.OutgoingPlayTime);
             packetOut.WriteS64(time);
             packetOut.WriteS64(time);
             return SendAsync(packetOut.ToArray());
@@ -980,7 +981,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(z >= -2097152);
             Contract.Assert(biomes.Length * 16 == DimensionType!.Value.Height);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayChunkBiomes);
+            packetOut.WriteS32V(Packets.OutgoingPlayChunkBiomes);
             packetOut.WriteS32V(1);
             packetOut.WriteS32(x);
             packetOut.WriteS32(z);
@@ -1042,7 +1043,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(blockLight.Length * 16 == DimensionType!.Value.Height + 2);
             Contract.Assert(skyLight.Length * 16 == DimensionType!.Value.Height + 2);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayChunkLight);
+            packetOut.WriteS32V(Packets.OutgoingPlayChunkLight);
             packetOut.WriteS32(x);
             packetOut.WriteS32(z);
             SemiCompactArray maskSkyLight = new(1, skyLight.Length);
@@ -1110,7 +1111,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(motionBlocking.Bits == (int)Math.Ceiling(Math.Log2(DimensionType!.Value.Height)));
             Contract.Assert(motionBlocking.Length == 256);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayChunkFull);
+            packetOut.WriteS32V(Packets.OutgoingPlayChunkFull);
             packetOut.WriteS32(x);
             packetOut.WriteS32(z);
             packetOut.WriteU8(0x0A);
@@ -1264,7 +1265,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(x >= -2097152);
             Contract.Assert(z >= -2097152);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayChunkUnload);
+            packetOut.WriteS32V(Packets.OutgoingPlayChunkUnload);
             packetOut.WriteS32(x);
             packetOut.WriteS32(z);
             return SendAsync(packetOut.ToArray());
@@ -1278,7 +1279,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(x >= -2097152);
             Contract.Assert(z >= -2097152);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayChunkCenter);
+            packetOut.WriteS32V(Packets.OutgoingPlayChunkCenter);
             packetOut.WriteS32V(x);
             packetOut.WriteS32V(z);
             return SendAsync(packetOut.ToArray());
@@ -1288,7 +1289,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEvent);
+            packetOut.WriteS32V(Packets.OutgoingPlayEvent);
             packetOut.WriteU8(13);
             packetOut.WriteF32(0.0f);
             return SendAsync(packetOut.ToArray());
@@ -1298,7 +1299,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayBlockSingle);
+            packetOut.WriteS32V(Packets.OutgoingPlayBlockSingle);
             packetOut.WriteU64(position.Data);
             packetOut.WriteS32V(id);
             return SendAsync(packetOut.ToArray());
@@ -1308,7 +1309,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityAdd);
+            packetOut.WriteS32V(Packets.OutgoingPlayEntityAdd);
             packetOut.WriteS32V(eid);
             packetOut.WriteGuid(id);
             packetOut.WriteS32V(entity.Id);
@@ -1329,7 +1330,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityRemove);
+            packetOut.WriteS32V(Packets.OutgoingPlayEntityRemove);
             packetOut.WriteS32V(eid.Length);
             for (int i = 0; i < eid.Length; i ++) packetOut.WriteS32V(eid[i]);
             return SendAsync(packetOut.ToArray());
@@ -1339,7 +1340,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityAnimation);
+            packetOut.WriteS32V(Packets.OutgoingPlayEntityAnimation);
             packetOut.WriteS32V(eid);
             packetOut.WriteS32V((int)animation);
             return SendAsync(packetOut.ToArray());
@@ -1355,7 +1356,7 @@ namespace Me.Shishioko.Msdl
             if (Math.Abs(dx) >= 8 || Math.Abs(dy) >= 8 || Math.Abs(dz) >= 8)
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityPositionFar);
+                packetOut.WriteS32V(Packets.OutgoingPlayEntityPositionFar);
                 packetOut.WriteS32V(eid);
                 packetOut.WriteF64(current.x);
                 packetOut.WriteF64(current.y);
@@ -1368,7 +1369,7 @@ namespace Me.Shishioko.Msdl
             else if (dr && (dx != 0 || dy != 0 || dz != 0))
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityPositionShort);
+                packetOut.WriteS32V(Packets.OutgoingPlayEntityPositionShort);
                 packetOut.WriteS32V(eid);
                 packetOut.WriteS16((short)(dx * 4096));
                 packetOut.WriteS16((short)(dy * 4096));
@@ -1381,7 +1382,7 @@ namespace Me.Shishioko.Msdl
             else if (dx != 0 || dy != 0 || dz != 0)
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityLocationShort);
+                packetOut.WriteS32V(Packets.OutgoingPlayEntityLocationShort);
                 packetOut.WriteS32V(eid);
                 packetOut.WriteS16((short)(dx * 4096));
                 packetOut.WriteS16((short)(dy * 4096));
@@ -1392,7 +1393,7 @@ namespace Me.Shishioko.Msdl
             else if (dr)
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityRotation);
+                packetOut.WriteS32V(Packets.OutgoingPlayEntityRotation);
                 packetOut.WriteS32V(eid);
                 packetOut.WriteU8((byte)(current.yaw / 360.0f * 256));
                 packetOut.WriteU8((byte)(current.pitch / 360.0f * 256));
@@ -1402,7 +1403,7 @@ namespace Me.Shishioko.Msdl
             if (previous.HasValue ? current.headYaw != previous.Value.headYaw : true)
             {
                 using MemoryStream packetOut = new();
-                packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityHead);
+                packetOut.WriteS32V(Packets.OutgoingPlayEntityHead);
                 packetOut.WriteS32V(eid);
                 packetOut.WriteU8((byte)(current.headYaw / 360.0f * 256));
                 await SendAsync(packetOut.ToArray());
@@ -1413,7 +1414,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEntityData);
+            packetOut.WriteS32V(Packets.OutgoingPlayEntityData);
             packetOut.WriteS32V(eid);
             entity.Serialize(packetOut, previous);
             packetOut.WriteU8(0xFF);
@@ -1424,7 +1425,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEffectAdd);
+            packetOut.WriteS32V(Packets.OutgoingPlayEffectAdd);
             packetOut.WriteS32V(eid);
             packetOut.WriteS32V((int)effect);
             packetOut.WriteS32V(level);
@@ -1442,7 +1443,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayEffectRemove);
+            packetOut.WriteS32V(Packets.OutgoingPlayEffectRemove);
             packetOut.WriteS32V(eid);
             packetOut.WriteS32V((int)effect);
             return SendAsync(packetOut.ToArray());
@@ -1453,7 +1454,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(DimensionName is not null);
             Contract.Assert(slot >= 0 && slot < 9);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayHotbar);
+            packetOut.WriteS32V(Packets.OutgoingPlayHotbar);
             packetOut.WriteS8((sbyte)slot);
             return SendAsync(packetOut.ToArray());
         }
@@ -1462,7 +1463,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayContainerSingle);
+            packetOut.WriteS32V(Packets.OutgoingPlayContainerSingle);
             packetOut.WriteS8(id);
             packetOut.WriteS32V(++ContainerSequence);
             packetOut.WriteS16(slot);
@@ -1474,7 +1475,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayContainerFull);
+            packetOut.WriteS32V(Packets.OutgoingPlayContainerFull);
             packetOut.WriteS8(id);
             packetOut.WriteS32V(++ContainerSequence);
             packetOut.WriteS32V(content.Length);
@@ -1490,7 +1491,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlaySpawnpoint);
+            packetOut.WriteS32V(Packets.OutgoingPlaySpawnpoint);
             packetOut.WriteU64(position.Data);
             packetOut.WriteF32(angle);
             return SendAsync(packetOut.ToArray());
@@ -1500,7 +1501,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayPlayerPosition);
+            packetOut.WriteS32V(Packets.OutgoingPlayPlayerPosition);
             packetOut.WriteF64(x);
             packetOut.WriteF64(y);
             packetOut.WriteF64(z);
@@ -1515,7 +1516,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayPlayerPoint);
+            packetOut.WriteS32V(Packets.OutgoingPlayPlayerPoint);
             packetOut.WriteS32V(eyes ? 1 : 0);
             packetOut.WriteF64(x);
             packetOut.WriteF64(y);
@@ -1528,7 +1529,7 @@ namespace Me.Shishioko.Msdl
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
             using MemoryStream packetOut = new();
-            packetOut.WriteS32V(ProtocolPackets.OutgoingPlayPlayerPoint);
+            packetOut.WriteS32V(Packets.OutgoingPlayPlayerPoint);
             packetOut.WriteS32V(eyes ? 1 : 0);
             packetOut.WriteF64(x);
             packetOut.WriteF64(y);

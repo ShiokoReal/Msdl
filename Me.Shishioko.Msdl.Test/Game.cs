@@ -206,7 +206,7 @@ namespace Me.Shishioko.Msdl.Test
                                 {
                                     EntityLightning entity = new()
                                     {
-                                        DisplayName = new ChatText(player.Name)
+                                        Name = new ChatText(player.Name)
                                         {
                                             Color = Color.Crimson,
                                         },

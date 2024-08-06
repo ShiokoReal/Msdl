@@ -1,36 +1,37 @@
-﻿using Net.Myzuc.ShioLib;
+﻿using Me.Shishioko.Msdl.Data.Protocol;
+using Net.Myzuc.ShioLib;
 using System.IO;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public abstract class EntityMob : EntityLiving
     {
-        private byte MobFlags = 0;
+        private byte EntityMobFlags = 0x00;
         public bool NoAI
         {
-            get => (MobFlags & 0x01) != 0;
+            get => (EntityMobFlags & 0x01) != 0;
             set
             {
-                MobFlags &= 0x01 ^ 0xFF;
-                if (value) MobFlags |= 0x01;
+                EntityMobFlags &= 0x01 ^ 0xFF;
+                if (value) EntityMobFlags |= 0x01;
             }
         }
         public bool Lefthanded
         {
-            get => (MobFlags & 0x02) != 0;
+            get => (EntityMobFlags & 0x02) != 0;
             set
             {
-                MobFlags &= 0x02 ^ 0xFF;
-                if (value) MobFlags |= 0x02;
+                EntityMobFlags &= 0x02 ^ 0xFF;
+                if (value) EntityMobFlags |= 0x02;
             }
         }
         public bool Aggressive
         {
-            get => (MobFlags & 0x04) != 0;
+            get => (EntityMobFlags & 0x04) != 0;
             set
             {
-                MobFlags &= 0x04 ^ 0xFF;
-                if (value) MobFlags |= 0x04;
+                EntityMobFlags &= 0x04 ^ 0xFF;
+                if (value) EntityMobFlags |= 0x04;
             }
         }
         public EntityMob()
@@ -41,12 +42,18 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
             base.Serialize(stream, rawDifference);
             EntityMob? difference = rawDifference is EntityMob castDifference ? castDifference : null;
-            if (difference is not null ? difference.MobFlags != MobFlags : true)
+            if (difference is not null ? difference.EntityMobFlags != EntityMobFlags : true)
             {
                 stream.WriteU8(15);
-                stream.WriteU8(0);
-                stream.WriteU8(MobFlags);
+                stream.WriteS32V(MetadataType.Byte);
+                stream.WriteU8(EntityMobFlags);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityMob entity) return;
+            EntityMobFlags = entity.EntityMobFlags;
         }
     }
 }

@@ -19,5 +19,10 @@ namespace Me.Shishioko.Msdl.Data
             stream.WriteS32V(0);
             stream.WriteS32V(0);
         }
+        public void Clone(Item item)
+        {
+            item.Count = Count;
+            item.ID = ID;
+        }
     }
 }

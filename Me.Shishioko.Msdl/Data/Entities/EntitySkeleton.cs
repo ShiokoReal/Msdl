@@ -1,11 +1,13 @@
-﻿using System.IO;
+﻿using System.Drawing;
+using System.IO;
+using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntitySkeleton : EntityMob
     {
-        public override int Id => 91;
+        internal override int Id => 91;
         public override double Height => 1.99;
         public override double Width => 0.6;
         public bool Transforming = false;
@@ -20,9 +22,15 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Transforming != Transforming : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(8);
+                stream.WriteS32V(MetadataType.Bool);
                 stream.WriteBool(Transforming);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntitySkeleton entity) return;
+            Transforming = entity.Transforming;
         }
     }
 }

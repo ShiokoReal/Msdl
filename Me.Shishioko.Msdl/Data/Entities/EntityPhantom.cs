@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityPhantom : EntityMob
     {
-        public override int Id => 76;
+        internal override int Id => 76;
         public override double Height => 0.5 + 0.1 * Size;
         public override double Width => 0.9 + 0.2 * Size;
         public int Size = 0;
@@ -20,9 +21,15 @@ namespace Me.Shishioko.Msdl.Data.Entities
             if (difference is not null ? difference.Size != Size : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(1);
+                stream.WriteS32V(MetadataType.S32V);
                 stream.WriteS32V(Size);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntityPhantom entity) return;
+            Size = entity.Size;
         }
     }
 }

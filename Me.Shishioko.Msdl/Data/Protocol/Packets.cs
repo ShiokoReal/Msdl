@@ -1,6 +1,6 @@
-﻿namespace Me.Shishioko.Msdl
+﻿namespace Me.Shishioko.Msdl.Data.Protocol
 {
-    internal static class ProtocolPackets
+    internal static class Packets
     {
         public const int IncomingHandshakeHandshake = 0x00;
 

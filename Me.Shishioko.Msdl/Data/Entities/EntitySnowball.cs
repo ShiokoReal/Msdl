@@ -5,7 +5,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntitySnowball : EntityBase
     {
-        public override int Id => 97;
+        internal override int Id => 97;
         public override double Height => 0.25;
         public override double Width => 0.25;
         public Item Item = new()
@@ -27,6 +27,12 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteU8(7);
                 Item.Serialize(stream);
             }
+        }
+        public override void Clone(EntityBase rawEntity)
+        {
+            base.Clone(rawEntity);
+            if (rawEntity is not EntitySnowball entity) return;
+            Item.Clone(entity.Item);
         }
     }
 }
