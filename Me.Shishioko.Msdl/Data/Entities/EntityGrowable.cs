@@ -11,7 +11,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityGrowable? difference = rawDifference is EntityGrowable castDifference ? castDifference : null;
@@ -22,7 +22,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Baby);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityGrowable entity) return;

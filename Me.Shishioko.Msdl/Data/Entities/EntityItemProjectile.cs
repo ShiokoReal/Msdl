@@ -1,21 +1,18 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Items;
 using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public abstract class EntityItemProjectile : EntityBase
+    public abstract class EntityItemProjectile : Entity
     {
         public Item Item;
-        internal EntityItemProjectile(int item)
+        internal EntityItemProjectile(Item item)
         {
-            Item = new()
-            {
-                ID = item,
-                Count = 1,
-            };
+            Item = item;
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityItemProjectile? difference = rawDifference is EntityItemProjectile castDifference ? castDifference : null;
@@ -26,11 +23,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 Item.Serialize(stream);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityItemProjectile entity) return;
-            Item.Clone(entity.Item);
+            Item = entity.Item.Clone();
         }
     }
 }

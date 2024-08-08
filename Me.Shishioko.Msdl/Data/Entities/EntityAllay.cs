@@ -18,7 +18,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityAllay? difference = rawDifference is EntityAllay castDifference ? castDifference : null;
@@ -35,7 +35,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Breedable);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityAllay entity) return;

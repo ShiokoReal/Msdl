@@ -1,4 +1,6 @@
-﻿namespace Me.Shishioko.Msdl.Data.Entities
+﻿using Me.Shishioko.Msdl.Data.Items;
+
+namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityEnderPearl : EntityItemProjectile
     {
@@ -8,7 +10,7 @@
         public override bool HitboxSoftCollision => false;
         public override bool HitboxHardCollision => false;
         public override bool HitboxAlign => false;
-        public EntityEnderPearl() : base(993) //TODO: read pearl id from item list
+        public EntityEnderPearl() : base(new ItemEnderPearl())
         {
 
         }

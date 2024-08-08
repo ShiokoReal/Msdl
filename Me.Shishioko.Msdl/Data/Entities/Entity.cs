@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public abstract class EntityBase
+    public abstract class Entity
     {
         public enum EntityBasePose
         {
@@ -104,11 +104,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public bool Gravitationless = false;
         public EntityBasePose Pose = EntityBasePose.Standing;
         public int Freeze = 0;
-        internal EntityBase()
+        internal Entity()
         {
 
         }
-        internal virtual void Serialize(Stream stream, EntityBase? difference)
+        internal virtual void Serialize(Stream stream, Entity? difference)
         {
             if (difference is not null ? difference.EntityBaseFlags != EntityBaseFlags : true)
             {
@@ -164,7 +164,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Freeze);
             }
         }
-        public virtual void Clone(EntityBase entity)
+        public virtual void Clone(Entity entity)
         {
             EntityBaseFlags = entity.EntityBaseFlags;
             Air = entity.Air;

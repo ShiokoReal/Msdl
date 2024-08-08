@@ -1,6 +1,6 @@
 ﻿namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityMarker : EntityBase
+    public sealed class EntityMarker : Entity
     {
         internal override int Id => 68;
         public override double HitboxHeight => 0.0;

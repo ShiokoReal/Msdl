@@ -1,6 +1,6 @@
 ﻿namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityLlamaSpit : EntityBase
+    public sealed class EntityLlamaSpit : Entity
     {
         internal override int Id => 66;
         public override double HitboxHeight => 0.25;

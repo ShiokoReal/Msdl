@@ -68,7 +68,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityPlayer? difference = rawDifference is EntityPlayer castDifference ? castDifference : null;
@@ -97,7 +97,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Righthanded);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityPlayer entity) return;

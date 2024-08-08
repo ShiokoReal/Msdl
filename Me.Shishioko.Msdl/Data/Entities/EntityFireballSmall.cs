@@ -1,4 +1,6 @@
-﻿namespace Me.Shishioko.Msdl.Data.Entities
+﻿using Me.Shishioko.Msdl.Data.Items;
+
+namespace Me.Shishioko.Msdl.Data.Entities
 {
     public sealed class EntityFireballSmall : EntityItemProjectile
     {
@@ -8,7 +10,7 @@
         public override bool HitboxSoftCollision => false;
         public override bool HitboxHardCollision => false;
         public override bool HitboxAlign => false;
-        public EntityFireballSmall() : base(1158) //TODO: read potion id from item list
+        public EntityFireballSmall() : base(new ItemFireCharge())
         {
 
         }

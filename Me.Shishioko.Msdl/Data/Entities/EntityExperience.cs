@@ -1,6 +1,6 @@
 ﻿namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityExperience : EntityBase
+    public sealed class EntityExperience : Entity
     {
         internal override int Id => 38;
         public override double HitboxHeight => 0.5;

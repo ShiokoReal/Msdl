@@ -1,6 +1,7 @@
 ﻿using Me.Shishioko.Msdl.Data;
 using Me.Shishioko.Msdl.Data.Chat;
 using Me.Shishioko.Msdl.Data.Entities;
+using Me.Shishioko.Msdl.Data.Items;
 using System.Drawing;
 
 namespace Me.Shishioko.Msdl.Test
@@ -39,15 +40,15 @@ namespace Me.Shishioko.Msdl.Test
             MediumColor = Color.FromArgb(DarkColor.R + 64, DarkColor.G + 64, DarkColor.B + 64);
             LightColor = Color.FromArgb(DarkColor.R + 128, DarkColor.G + 128, DarkColor.B + 128);
 
-            Hotbar[0] = new(443, 0);
-            Hotbar[1] = new(35, 14);
-            Hotbar[2] = new(57, 112);
-            Hotbar[3] = new(27, 9);
-            Hotbar[4] = new(45, 18666);
-            Hotbar[5] = new(485, 5959);
-            Hotbar[6] = new(216, 2061);
-            Hotbar[7] = new(909, 95);
-            Hotbar[8] = new(443, 0);
+            Hotbar[0] = null;
+            Hotbar[1] = new ItemCobblestone();
+            Hotbar[2] = new ItemSand();
+            Hotbar[3] = new ItemGrassBlock();
+            Hotbar[4] = new ItemCrimsonPlanks();
+            Hotbar[5] = new ItemRedStainedGlass();
+            Hotbar[6] = new ItemRedWool();
+            Hotbar[7] = new ItemWaterBucket();
+            Hotbar[8] = null;
         }
         internal async Task PulseAsync()
         {

@@ -17,7 +17,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityWarden? difference = rawDifference is EntityWarden castDifference ? castDifference : null;
@@ -28,7 +28,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Anger);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityWarden entity) return;

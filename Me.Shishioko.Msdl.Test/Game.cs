@@ -1,12 +1,16 @@
 ﻿using Me.Shishioko.Msdl.Data;
+using Me.Shishioko.Msdl.Data.Blocks;
 using Me.Shishioko.Msdl.Data.Chat;
 using Me.Shishioko.Msdl.Data.Entities;
+using Me.Shishioko.Msdl.Data.Items;
 using Me.Shishioko.SJNetChat;
 using Me.Shishioko.SJNetChat.Extensions;
 using Net.Myzuc.ShioLib;
+using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -202,28 +206,42 @@ namespace Me.Shishioko.Msdl.Test
                                     //await player.Connection.SendEffectAddAsync(player.EID, Effect.Levitation, int.MaxValue, 100, true, true, true, true);
                                     break;
                                 }
+                            case "block":
+                                {
+                                    BlockGrassBlock block = new()
+                                    {
+                                        Snowy = false
+                                    };
+                                    world.SetBlock((int)player.X, (int)player.Y, (int)player.Z, block.Id);
+                                    break;
+                                }
                             case "illusion":
                                 {
-                                    EntityExperience entity = new()
+                                    double y = player.Y;
+                                    foreach(Type type in Assembly.GetAssembly(typeof(Entity))!.GetTypes().Where((Type type) => type.IsSubclassOf(typeof(Entity)) && !type.IsAbstract))
                                     {
-                                        Name = new ChatText(player.Name)
+                                        Entity? entity = (Entity?)Activator.CreateInstance(type);
+                                        if (entity is null) continue;
+                                        Console.WriteLine(type.Name);
+                                        entity.Name = new ChatText(player.Name)
                                         {
                                             Color = Color.Crimson,
-                                        },
-                                        Invisible = true,
-                                        //Pose = EntityBase.EntityPose.Sneaking,
-                                        Gravitationless = true,
-                                        //Silent = true,
-                                    };
-                                    Property[] properties = [new("textures", "ewogICJ0aW1lc3RhbXAiIDogMTY1MzIwMTM1OTk5MCwKICAicHJvZmlsZUlkIiA6ICJiMjdjMjlkZWZiNWU0OTEyYjFlYmQ5NDVkMmI2NzE0YSIsCiAgInByb2ZpbGVOYW1lIiA6ICJIRUtUMCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82ZDE4NGJkYTRkZDllYWEwOWZmMDMxYzU5ZTkzZTIzN2ZhY2E0MjQzODUxMDYwMTliYjNhMzMxOGZmNTk4ODlmIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=", "s1r8R8zvhqcgQ+iWl83oSn3ewxlPYIL8z09Z9oqhFVSNeMyq0GZc9NuHWtgrvjRPnxMUkEe4H5yyXACNg+L9S9lyPFcOh8Zl9E8mjD2NscXgTFj/mbO1N+gtgS/b+sLrVebPih72x/rnjoVqOLdJNbAWxQLZH5slo1vbiU9Njx3BZSJBQhKvOoBFfvzg+FXjEfTNiJkWU7yAeecPJN5mj4gsVYCyDGK5IWN81apeGTNfAJheEWFonuvmOnivbVqCQex1CREWIrAFwN+xSgM7Pu0r8DecdGtHihftOz3A/7bFfnoNIGvVuV14U70Hfw8x2UlAOxOlVK2pX6HpxL4b4cq7BZ6ja16pJtwOplfFunQAEGAA11idITtdsN+Q1y2EDKTGtF1n33TacXeJSqGoUDV8MYblDg53HfdvFbI02rnIZpy6A7Wmn9ithUO4D8Bu9EHOs54ei9mANxkfjU0RJ12f/aEhzz+kRCxU6qLBTL7LFaauJbkoAvReCK+F0xZh6TTo39EZfwScWlhzutV3pBvEYXKinJ3t8r9eLbmY7lW169ppT9t9y2IjFlVMrtrVEztXq9NW9DozkHKOxn4rNVmUrPLBH1m0BWo6xheiR+lKIqQSBX7rmDNQeLn8kvMfODWJFhEMksICPU7I7u3wWirxJHVu50oW6v440tfYYEM=")];
-                                    Guid id = Guid.NewGuid();
-                                    int eid = ++LastEID;
-                                    await Task.WhenAll(Players.Values.Select(async currentPlayer =>
-                                    {
-                                        await currentPlayer.Connection.SendTablistUpdate([id], [(eid.ToString(), properties)]);
-                                        await currentPlayer.Connection.SendEntityAddAsync(eid, id, entity, player.X, player.Y, player.Z, player.Pitch, player.Yaw, player.HeadYaw);
-                                        await currentPlayer.Connection.SendEntityDataAsync(eid, entity);
-                                    }));
+                                        };
+                                        entity.Gravitationless = true;
+                                        Guid id = Guid.NewGuid();
+                                        int eid = ++LastEID;
+                                        await Task.WhenAll(Players.Values.Select(async currentPlayer =>
+                                        {
+                                            if (entity is EntityPlayer)
+                                            {
+                                                Property[] properties = [new("textures", "ewogICJ0aW1lc3RhbXAiIDogMTY1MzIwMTM1OTk5MCwKICAicHJvZmlsZUlkIiA6ICJiMjdjMjlkZWZiNWU0OTEyYjFlYmQ5NDVkMmI2NzE0YSIsCiAgInByb2ZpbGVOYW1lIiA6ICJIRUtUMCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82ZDE4NGJkYTRkZDllYWEwOWZmMDMxYzU5ZTkzZTIzN2ZhY2E0MjQzODUxMDYwMTliYjNhMzMxOGZmNTk4ODlmIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=", "s1r8R8zvhqcgQ+iWl83oSn3ewxlPYIL8z09Z9oqhFVSNeMyq0GZc9NuHWtgrvjRPnxMUkEe4H5yyXACNg+L9S9lyPFcOh8Zl9E8mjD2NscXgTFj/mbO1N+gtgS/b+sLrVebPih72x/rnjoVqOLdJNbAWxQLZH5slo1vbiU9Njx3BZSJBQhKvOoBFfvzg+FXjEfTNiJkWU7yAeecPJN5mj4gsVYCyDGK5IWN81apeGTNfAJheEWFonuvmOnivbVqCQex1CREWIrAFwN+xSgM7Pu0r8DecdGtHihftOz3A/7bFfnoNIGvVuV14U70Hfw8x2UlAOxOlVK2pX6HpxL4b4cq7BZ6ja16pJtwOplfFunQAEGAA11idITtdsN+Q1y2EDKTGtF1n33TacXeJSqGoUDV8MYblDg53HfdvFbI02rnIZpy6A7Wmn9ithUO4D8Bu9EHOs54ei9mANxkfjU0RJ12f/aEhzz+kRCxU6qLBTL7LFaauJbkoAvReCK+F0xZh6TTo39EZfwScWlhzutV3pBvEYXKinJ3t8r9eLbmY7lW169ppT9t9y2IjFlVMrtrVEztXq9NW9DozkHKOxn4rNVmUrPLBH1m0BWo6xheiR+lKIqQSBX7rmDNQeLn8kvMfODWJFhEMksICPU7I7u3wWirxJHVu50oW6v440tfYYEM=")];
+                                                await currentPlayer.Connection.SendTablistUpdate([id], [(eid.ToString(), properties)]);
+                                            }
+                                            await currentPlayer.Connection.SendEntityAddAsync(eid, id, entity, player.X, y, player.Z, player.Pitch, player.Yaw, player.HeadYaw);
+                                            await currentPlayer.Connection.SendEntityDataAsync(eid, entity);
+                                        }));
+                                        y += entity.HitboxHeight + 1;
+                                    }
                                     break;
                                 }
                             case "uwu":
@@ -300,7 +318,8 @@ namespace Me.Shishioko.Msdl.Test
                                     break;
                                 }
                         }
-                        world.SetBlock(x, y, z, player.Hotbar[4]?.BlockID ?? 0);
+                        Block? block = player.Hotbar[4]?.Block;
+                        if (block is not null) world.SetBlock(x, y, z, block.Id);
                     };
                     player.Connection.ReceiveLocationAsync = async (double x, double y, double z) =>
                     {
@@ -376,11 +395,7 @@ namespace Me.Shishioko.Msdl.Test
                             ID = player.Hotbar[slot]?.ItemID ?? 0,
                             Count = 1,
                         });*/
-                        await player.Connection.SendContainerFullAsync(0, [..Enumerable.Repeat(new Data.Item(), 36), ..player.Hotbar.Select(item => new Data.Item()
-                            {
-                                ID = item?.ItemID ?? 0,
-                                Count = item is not null ? 1 : 0,
-                            })], new());
+                        await player.Connection.SendContainerFullAsync(0, [..Enumerable.Repeat<Item?>(null, 36), ..player.Hotbar], null);
                         //player.Hotbar[0] = player.Hotbar[slot];
                     };
                     player.Connection.ReceiveChatAsync = async (string message) =>
@@ -530,11 +545,7 @@ namespace Me.Shishioko.Msdl.Test
 
                                 }
                             }));
-                            await player.Connection.SendContainerFullAsync(0, [..Enumerable.Repeat(new Data.Item(), 36), ..player.Hotbar.Select(item => new Data.Item()
-                            {
-                                ID = item?.ItemID ?? 0,
-                                Count = item is not null ? 1 : 0,
-                            })], new());
+                            await player.Connection.SendContainerFullAsync(0, [..Enumerable.Repeat<Item?>(null, 36), ..player.Hotbar], null);
                             await player.Connection.SendChunkCenterAsync(0, 0);
                             await player.Connection.SendSpawnpointAsync(new(0, 128, 0), 0.0f);
                             await player.Connection.SendChunkWaitAsync();

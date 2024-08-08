@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public abstract class EntityLiving : EntityBase
+    public abstract class EntityLiving : Entity
     {
         private byte EntityLivingFlags = 0x00;
         public bool HandActive
@@ -44,7 +44,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityLiving? difference = rawDifference is EntityLiving castDifference ? castDifference : null;
@@ -89,7 +89,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 if (SleepingLocation.HasValue) stream.WriteU64(SleepingLocation.Value.Data);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityLiving entity) return;

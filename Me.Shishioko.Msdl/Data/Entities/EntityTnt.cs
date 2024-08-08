@@ -4,7 +4,7 @@ using Net.Myzuc.ShioLib;
 
 namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityTnt : EntityBase
+    public sealed class EntityTnt : Entity
     {
         internal override int Id => 106;
         public override double HitboxHeight => 0.98;
@@ -18,7 +18,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityTnt? difference = rawDifference is EntityTnt castDifference ? castDifference : null;
@@ -35,7 +35,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Block);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityTnt entity) return;

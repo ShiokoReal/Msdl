@@ -31,7 +31,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityEnderDragon? difference = rawDifference is EntityEnderDragon castDifference ? castDifference : null;
@@ -42,7 +42,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V((int)Phase);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityEnderDragon entity) return;

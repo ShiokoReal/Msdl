@@ -20,7 +20,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntityWither? difference = rawDifference is EntityWither castDifference ? castDifference : null;
@@ -49,7 +49,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Invulnerability);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntityWither entity) return;

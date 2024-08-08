@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Me.Shishioko.Msdl.Data.Entities;
 using Me.Shishioko.Msdl.Data.Protocol;
+using Me.Shishioko.Msdl.Data.Items;
 
 namespace Me.Shishioko.Msdl
 {
@@ -577,6 +578,8 @@ namespace Me.Shishioko.Msdl
             "minecraft:dry_out",
             "minecraft:hot_floor",
             "minecraft:fly_into_wall",
+            "minecraft:thrown",
+            "minecraft:spit",
             "minecraft:player_attack", //TODO: all vanilla types
             ];
             packetOut.WriteS32V(damages.Length);
@@ -1304,7 +1307,7 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteS32V(id);
             return SendAsync(packetOut.ToArray());
         }
-        public Task SendEntityAddAsync(int eid, Guid id, EntityBase entity, double x, double y, double z, float pitch, float yaw, float headYaw)
+        public Task SendEntityAddAsync(int eid, Guid id, Entity entity, double x, double y, double z, float pitch, float yaw, float headYaw)
         {
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
@@ -1409,7 +1412,7 @@ namespace Me.Shishioko.Msdl
                 await SendAsync(packetOut.ToArray());
             }
         }
-        public Task SendEntityDataAsync(int eid, EntityBase entity, EntityBase? previous = null)
+        public Task SendEntityDataAsync(int eid, Entity entity, Entity? previous = null)
         {
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
@@ -1458,7 +1461,7 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteS8((sbyte)slot);
             return SendAsync(packetOut.ToArray());
         }
-        public Task SendContainerSingleAsync(sbyte id, short slot, Item item)
+        public Task SendContainerSingleAsync(sbyte id, short slot, Item? item)
         {
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
@@ -1467,10 +1470,11 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteS8(id);
             packetOut.WriteS32V(++ContainerSequence);
             packetOut.WriteS16(slot);
-            item.Serialize(packetOut);
+            item?.Serialize(packetOut);
+            if (item is null) packetOut.WriteS32V(0);
             return SendAsync(packetOut.ToArray());
         }
-        public Task SendContainerFullAsync(sbyte id, Item[] content, Item carry)
+        public Task SendContainerFullAsync(sbyte id, Item?[] content, Item? carry)
         {
             Contract.Assert(State == ProtocolState.Play);
             Contract.Assert(DimensionName is not null);
@@ -1481,9 +1485,12 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteS32V(content.Length);
             for (int i = 0; i < content.Length; i++)
             {
-                content[i].Serialize(packetOut);
+                Item? item = content[i];
+                item?.Serialize(packetOut);
+                if (item is null) packetOut.WriteS32V(0);
             }
-            carry.Serialize(packetOut);
+            carry?.Serialize(packetOut);
+            if (carry is null) packetOut.WriteS32V(0);
             return SendAsync(packetOut.ToArray());
         }
         public Task SendSpawnpointAsync(Position position, float angle)

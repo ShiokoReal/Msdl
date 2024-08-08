@@ -12,23 +12,32 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public override bool HitboxSoftCollision => true;
         public override bool HitboxHardCollision => false;
         public override bool HitboxAlign => false;
-        public bool Climbing = false;
+        private byte EntitySpiderFlags = 0x01;
+        public bool Climbing
+        {
+            get => (EntitySpiderFlags & 0x01) != 0;
+            set
+            {
+                EntitySpiderFlags &= 0x01 ^ 0xFF;
+                if (value) EntitySpiderFlags |= 0x01;
+            }
+        }
         public EntitySpider()
         {
 
         }
-        internal override void Serialize(Stream stream, EntityBase? rawDifference)
+        internal override void Serialize(Stream stream, Entity? rawDifference)
         {
             base.Serialize(stream, rawDifference);
             EntitySpider? difference = rawDifference is EntitySpider castDifference ? castDifference : null;
-            if (difference is not null ? difference.Climbing != Climbing : true)
+            if (difference is not null ? difference.EntitySpiderFlags != EntitySpiderFlags : true)
             {
                 stream.WriteU8(16);
-                stream.WriteU8(MetadataType.Bool);
-                stream.WriteBool(Climbing);
+                stream.WriteU8(MetadataType.Byte);
+                stream.WriteU8(EntitySpiderFlags);
             }
         }
-        public override void Clone(EntityBase rawEntity)
+        public override void Clone(Entity rawEntity)
         {
             base.Clone(rawEntity);
             if (rawEntity is not EntitySpider entity) return;

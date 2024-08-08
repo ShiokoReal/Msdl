@@ -1,6 +1,6 @@
 ﻿namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityLeashKnot : EntityBase
+    public sealed class EntityLeashKnot : Entity
     {
         internal override int Id => 63;
         public override double HitboxHeight => 0.5;

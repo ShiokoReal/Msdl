@@ -1,6 +1,6 @@
 ﻿namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityWindCharge : EntityBase
+    public sealed class EntityWindCharge : Entity
     { //TODO: check if can be spawned and why not if not also check properties defined of collision
         internal override int Id => 117;
         public override double HitboxHeight => 0.3125;

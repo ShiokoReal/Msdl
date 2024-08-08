@@ -1,6 +1,6 @@
 ﻿namespace Me.Shishioko.Msdl.Data.Entities
 {
-    public sealed class EntityShulkerBullet : EntityBase
+    public sealed class EntityShulkerBullet : Entity
     {
         internal override int Id => 89;
         public override double HitboxHeight => 0.3125;
