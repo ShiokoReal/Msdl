@@ -49,14 +49,20 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Invulnerability);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityWither entity) return;
             CenterTargetEID = entity.CenterTargetEID;
             LeftTargetEID = entity.LeftTargetEID;
             RightTargetEID = entity.RightTargetEID;
             Invulnerability = entity.Invulnerability;
+        }
+        public override EntityWither Clone()
+        {
+            EntityWither entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

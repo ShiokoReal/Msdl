@@ -89,9 +89,9 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 if (SleepingLocation.HasValue) stream.WriteU64(SleepingLocation.Value.Data);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityLiving entity) return;
             EntityLivingFlags = entity.EntityLivingFlags;
             Health = entity.Health;

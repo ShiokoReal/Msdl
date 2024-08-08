@@ -22,9 +22,9 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Baby);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityGrowable entity) return;
             Baby = entity.Baby;
         }

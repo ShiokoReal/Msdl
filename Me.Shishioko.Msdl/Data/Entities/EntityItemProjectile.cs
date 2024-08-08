@@ -23,9 +23,9 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 Item.Serialize(stream);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityItemProjectile entity) return;
             Item = entity.Item.Clone();
         }

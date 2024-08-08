@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityShulkerBullet Clone()
+        {
+            EntityShulkerBullet entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

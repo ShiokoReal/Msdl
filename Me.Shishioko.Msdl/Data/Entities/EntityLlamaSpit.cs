@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityLlamaSpit Clone()
+        {
+            EntityLlamaSpit entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

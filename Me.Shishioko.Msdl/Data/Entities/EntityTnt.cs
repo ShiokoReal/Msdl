@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Me.Shishioko.Msdl.Data.Blocks;
 using Me.Shishioko.Msdl.Data.Protocol;
 using Net.Myzuc.ShioLib;
 
@@ -13,7 +14,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public override bool HitboxHardCollision => false;
         public override bool HitboxAlign => false;
         public int Fuse = 80;
-        public int Block = 2094; //TODO: tnt block id from block classes read to int
+        public Block Block = new BlockTnt();
         public EntityTnt()
         {
 
@@ -32,15 +33,21 @@ namespace Me.Shishioko.Msdl.Data.Entities
             {
                 stream.WriteU8(9);
                 stream.WriteU8(MetadataType.BlockId);
-                stream.WriteS32V(Block);
+                stream.WriteS32V(Block.Id);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityTnt entity) return;
             Fuse = entity.Fuse;
-            Block = entity.Block;
+            Block = entity.Block.Clone();
+        }
+        public override EntityTnt Clone()
+        {
+            EntityTnt entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

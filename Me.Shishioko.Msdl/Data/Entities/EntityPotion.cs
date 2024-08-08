@@ -14,5 +14,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
+        public override EntityPotion Clone()
+        {
+            EntityPotion entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

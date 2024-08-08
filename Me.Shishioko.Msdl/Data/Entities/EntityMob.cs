@@ -49,9 +49,9 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteU8(EntityMobFlags);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityMob entity) return;
             EntityMobFlags = entity.EntityMobFlags;
         }

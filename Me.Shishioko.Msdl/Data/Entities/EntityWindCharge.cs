@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityWindCharge Clone()
+        {
+            EntityWindCharge entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

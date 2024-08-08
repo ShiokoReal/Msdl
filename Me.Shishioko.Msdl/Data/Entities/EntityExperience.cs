@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityExperience Clone()
+        {
+            EntityExperience entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

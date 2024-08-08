@@ -14,5 +14,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
+        public override EntityEnderEye Clone()
+        {
+            EntityEnderEye entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

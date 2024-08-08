@@ -12,7 +12,13 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public override bool HitboxAlign => false;
         public EntityFireballBig() : base(new ItemFireCharge())
         {
-
+            
+        }
+        public override EntityFireballBig Clone()
+        {
+            EntityFireballBig entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

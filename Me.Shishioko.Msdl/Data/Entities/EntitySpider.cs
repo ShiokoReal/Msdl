@@ -37,11 +37,17 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteU8(EntitySpiderFlags);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntitySpider entity) return;
             Climbing = entity.Climbing;
+        }
+        public override EntitySpider Clone()
+        {
+            EntitySpider entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

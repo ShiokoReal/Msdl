@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityLightning Clone()
+        {
+            EntityLightning entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

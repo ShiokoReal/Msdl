@@ -31,7 +31,6 @@ namespace Me.Shishioko.Msdl.Data.Entities
         public abstract bool HitboxSoftCollision { get; }
         public abstract bool HitboxHardCollision { get; }
         public abstract bool HitboxAlign { get; }
-        public virtual int InitialData => 0;
 
         private byte EntityBaseFlags = 0x00;
         public bool Burning
@@ -164,7 +163,7 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Freeze);
             }
         }
-        public virtual void Clone(Entity entity)
+        public virtual void CloneFrom(Entity entity)
         {
             EntityBaseFlags = entity.EntityBaseFlags;
             Air = entity.Air;
@@ -175,5 +174,6 @@ namespace Me.Shishioko.Msdl.Data.Entities
             Pose = entity.Pose;
             Freeze = entity.Freeze;
         }
+        public abstract Entity Clone();
     }
 }

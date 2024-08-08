@@ -14,5 +14,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
+        public override EntityExperienceBottle Clone()
+        {
+            EntityExperienceBottle entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

@@ -29,11 +29,17 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Transforming);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntitySkeleton entity) return;
             Transforming = entity.Transforming;
+        }
+        public override EntitySkeleton Clone()
+        {
+            EntitySkeleton entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

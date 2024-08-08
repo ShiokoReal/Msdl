@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityMarker Clone()
+        {
+            EntityMarker entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

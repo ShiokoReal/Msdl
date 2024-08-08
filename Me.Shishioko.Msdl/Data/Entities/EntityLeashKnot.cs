@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityLeashKnot Clone()
+        {
+            EntityLeashKnot entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

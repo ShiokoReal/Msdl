@@ -28,11 +28,17 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Anger);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityWarden entity) return;
             Anger = entity.Anger;
+        }
+        public override EntityWarden Clone()
+        {
+            EntityWarden entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

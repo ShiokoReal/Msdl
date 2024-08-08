@@ -35,12 +35,18 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Breedable);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityAllay entity) return;
             Dancing = entity.Dancing;
             Breedable = entity.Breedable;
+        }
+        public override EntityAllay Clone()
+        {
+            EntityAllay entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

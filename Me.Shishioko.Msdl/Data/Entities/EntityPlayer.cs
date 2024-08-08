@@ -97,14 +97,20 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Righthanded);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityPlayer entity) return;
             Absorption = entity.Absorption;
             Score = entity.Score;
             SkinMask = entity.SkinMask;
             Righthanded = entity.Righthanded;
+        }
+        public override EntityPlayer Clone()
+        {
+            EntityPlayer entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

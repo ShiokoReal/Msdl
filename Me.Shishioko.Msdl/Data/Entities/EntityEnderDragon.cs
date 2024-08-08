@@ -42,11 +42,17 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V((int)Phase);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityEnderDragon entity) return;
             Phase = entity.Phase;
+        }
+        public override EntityEnderDragon Clone()
+        {
+            EntityEnderDragon entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

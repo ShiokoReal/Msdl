@@ -22,9 +22,9 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteS32V(Size);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityResizable entity) return;
             Size = entity.Size;
         }

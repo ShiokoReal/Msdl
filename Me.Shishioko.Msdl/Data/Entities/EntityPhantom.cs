@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityPhantom Clone()
+        {
+            EntityPhantom entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

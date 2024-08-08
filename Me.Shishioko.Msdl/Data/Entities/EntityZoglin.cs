@@ -12,5 +12,11 @@
         {
 
         }
+        public override EntityZoglin Clone()
+        {
+            EntityZoglin entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

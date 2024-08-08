@@ -43,13 +43,19 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteU8((byte)(Color.HasValue ? (int)Color.Value : 16));
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityShulker entity) return;
             Face = entity.Face;
             Peek = entity.Peek;
             Color = entity.Color;
+        }
+        public override EntityShulker Clone()
+        {
+            EntityShulker entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }

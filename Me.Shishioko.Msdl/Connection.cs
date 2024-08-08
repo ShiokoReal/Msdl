@@ -1322,7 +1322,7 @@ namespace Me.Shishioko.Msdl
             packetOut.WriteU8((byte)(pitch / 360.0f * 256));
             packetOut.WriteU8((byte)(yaw / 360.0f * 256));
             packetOut.WriteU8((byte)(headYaw / 360.0f * 256));
-            packetOut.WriteS32V(entity.InitialData);
+            packetOut.WriteS32V(0);
             packetOut.WriteS16(0);
             packetOut.WriteS16(0);
             packetOut.WriteS16(0);

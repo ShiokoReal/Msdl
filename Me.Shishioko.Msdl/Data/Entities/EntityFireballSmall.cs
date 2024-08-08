@@ -14,5 +14,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
 
         }
+        public override EntityFireballSmall Clone()
+        {
+            EntityFireballSmall entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

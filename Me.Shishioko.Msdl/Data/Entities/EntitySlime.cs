@@ -16,5 +16,11 @@ namespace Me.Shishioko.Msdl.Data.Entities
         {
             Size = 1;
         }
+        public override EntitySlime Clone()
+        {
+            EntitySlime entity = new();
+            entity.CloneFrom(this);
+            return entity;
+        }
     }
 }

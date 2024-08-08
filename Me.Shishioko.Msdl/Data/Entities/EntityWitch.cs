@@ -35,12 +35,18 @@ namespace Me.Shishioko.Msdl.Data.Entities
                 stream.WriteBool(Drinking);
             }
         }
-        public override void Clone(Entity rawEntity)
+        public override void CloneFrom(Entity rawEntity)
         {
-            base.Clone(rawEntity);
+            base.CloneFrom(rawEntity);
             if (rawEntity is not EntityWitch entity) return;
             Celebrating = entity.Celebrating;
             Drinking = entity.Drinking;
+        }
+        public override EntityWitch Clone()
+        {
+            EntityWitch entity = new();
+            entity.CloneFrom(this);
+            return entity;
         }
     }
 }
