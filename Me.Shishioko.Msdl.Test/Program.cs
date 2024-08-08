@@ -1,4 +1,5 @@
-﻿using Me.Shishioko.Msdl.Data;
+﻿using Me.Shishioko.Msdl.Clients;
+using Me.Shishioko.Msdl.Data;
 using Me.Shishioko.Msdl.Data.Chat;
 using System.IO.Compression;
 using System.Net;
@@ -25,32 +26,54 @@ namespace Me.Shishioko.Msdl.Test
         {
             try
             {
-                Connection connection = new(new NetworkStream(socket));
-                (ProtocolState state, string address, ushort port) = await connection.ReceiveHandshakeAsync();
-                if (state == ProtocolState.Status)
+                int version = 0;
+                string host = string.Empty;
+                ushort port = 0;
+                ClientHandshake handshake = new(new NetworkStream(socket))
                 {
-                    await connection.ExchangeStatusStatusAsync(new ServerStatus()
+                    ReceiveHandshake = async (int pkVersion, string pkHost, ushort pkPort) =>
                     {
-                        Version = new("version", 765),
-                        Description = new ChatText($"balls\n{address}:{port}")
-                    });
-                    await connection.ExchangeStatusPingAsync();
-                }
-                else if (state == ProtocolState.Login)
-                {
-                    (string name, Guid guid) = await connection.ReceiveLoginStartAsync();
-                    if (Game.Players.Count > 0) guid = Guid.NewGuid();
-                    Property[]? properties = Game.Players.Count <= 0 ? await connection.ExchangeLoginEncryptionAsync(guid, name, "test", true) : [];
-                    if (properties == null) return;
-                    await connection.SendLoginCompressionAsync(256, CompressionLevel.Optimal);
-                    await connection.ExchangeLoginEndAsync(guid, name, properties);
-                    Player player = new(guid, connection, name, properties, address, port);
-                    await Task.WhenAny([
-                        player.PulseAsync(),
-                        Game.ServeAsync(player)
-                    ]);
-                }
-                else throw new NotSupportedException();
+                        version = pkVersion;
+                        host = pkHost;
+                        port = pkPort;
+                    },
+                    SwitchStatus = async (ClientStatus status) =>
+                    {
+                        status.ReceiveStatusRequest = () => status.SendStatusResponseAsync(new ServerStatus()
+                        {
+                            Version = new("version", 765),
+                            Description = new ChatText($"balls\n{host}:{port}")
+                        });
+                        status.ReceivePingRequest = (long sequence) => status.SendPingResponseAsync(sequence);
+                        await status.StartReceivingAsync();
+                    },
+                    SwitchLogin = async (ClientLogin login) =>
+                    {
+                        string name = string.Empty;
+                        Guid guid = Guid.Empty;
+                        Property[] properties = [];
+                        login.ReceiveStart = async (string pkName, Guid pkGuid) =>
+                        {
+                            name = pkName;
+                            guid = pkGuid;
+                            await login.SendEncryptionRequestAsync("test", true);
+                        };
+                        login.ReceiveAuthentication += async (string pkName, Guid pkGuid, Property[] pkProperties) =>
+                        {
+                            name = pkName;
+                            guid = pkGuid;
+                            properties = pkProperties;
+                            await login.SendCompressionAsync(256, CompressionLevel.Optimal);
+                            await login.SendEndAsync(guid, name, properties);
+                        };
+                        login.SwitchConfiguration += async (ClientConfiguration client) =>
+                        {
+                            await ServeConfigurationAsync(guid, name, properties, client);
+                        };
+                        await login.StartReceivingAsync();
+                    }
+                };
+                await handshake.StartReceivingAsync();
             }
             catch(Exception ex)
             {
@@ -60,6 +83,19 @@ namespace Me.Shishioko.Msdl.Test
             {
                 socket.Dispose();
             }
+        }
+        private static async Task ServeConfigurationAsync(Guid guid, string name, Property[] properties, ClientConfiguration client, World world)
+        {
+            client.
+            //add to and set up world
+            //wait 
+
+
+            /*Player player = new(guid, connection, name, properties, address, port);
+            await Task.WhenAny([
+                player.PulseAsync(),
+                                Game.ServeAsync(player)
+            ]);*/
         }
     }
 }

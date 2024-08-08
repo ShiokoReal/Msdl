@@ -1,4 +1,5 @@
-﻿using Me.Shishioko.Msdl.Data;
+﻿using Me.Shishioko.Msdl.Clients;
+using Me.Shishioko.Msdl.Data;
 using Me.Shishioko.Msdl.Data.Blocks;
 using Me.Shishioko.Msdl.Data.Chat;
 using Me.Shishioko.Msdl.Data.Entities;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Net;
+using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -46,6 +48,137 @@ namespace Me.Shishioko.Msdl.Test
             });
             Biomes.Add(new("biome:default"));
         }
+        internal async Task ServeAsync(Guid guid, string name, Property[] properties, string host, ushort port, ClientConfiguration initial)
+        {
+            ClientConfiguration configuration = initial;
+            while (true)
+            {
+                if (Reloader is not null) await Reloader();
+                Running++;
+                configuration.ReceiveCustom += async (string channel, byte[] data) =>
+                {
+                    MemoryStream packetIn = new(data);
+                    switch (channel)
+                    {
+                        case "minecraft:brand":
+                            {
+                                Console.WriteLine(packetIn.ReadString(SizePrefix.S32V, 256));
+                                break;
+                            }
+                        default:
+                            {
+                                Console.WriteLine(channel);
+                                break;
+                            }
+                    }
+                };
+                Preferences? preferences = null;
+                configuration.ReceivePreferences += async (Preferences pkPreferences) =>
+                {
+                    preferences = pkPreferences;
+                };
+                configuration.SwitchPlay += async (ClientPlay play) =>
+                {
+                    World world = Worlds.Values.First();
+                    while (true)
+                    {
+                        World thisWorld = world;
+                        Player thisPlayer = new(play, guid, ++LastEID, name, properties, host, port);
+                        if (!Players.TryAdd(thisPlayer.ID, thisPlayer)) return;
+                        try
+                        {
+                            play.ReceivePreferencesAsync += async (Preferences pkPreferences) =>
+                            {
+                                preferences = pkPreferences;
+                                //TODO: change entity hand
+                            };
+                            play.ReceiveBreakAsync += async (Position location, float progress, BlockFace face) =>
+                            {
+                                thisWorld.SetBlock(location.X, location.Y, location.Z, 0);
+                            };
+                            play.ReceiveInteractionBlockAsync += async (bool offhanded, Position position, BlockFace face, float cursorX, float cursorY, float cursorZ, bool inside) =>
+                            {
+                                int x = position.X;
+                                int y = position.Y;
+                                int z = position.Z;
+                                switch (face)
+                                {
+                                    case BlockFace.Top:
+                                        {
+                                            y++;
+                                            break;
+                                        }
+                                    case BlockFace.Bottom:
+                                        {
+                                            y--;
+                                            break;
+                                        }
+                                    case BlockFace.North:
+                                        {
+                                            z--;
+                                            break;
+                                        }
+                                    case BlockFace.South:
+                                        {
+                                            z++;
+                                            break;
+                                        }
+                                    case BlockFace.West:
+                                        {
+                                            x--;
+                                            break;
+                                        }
+                                    case BlockFace.East:
+                                        {
+                                            x++;
+                                            break;
+                                        }
+                                }
+                                Block? block = thisPlayer.Hotbar[4]?.Block;
+                                if (block is not null) thisWorld.SetBlock(x, y, z, block.Id);
+                            };
+                            play.ReceiveLocationAsync += async (double x, double y, double z) =>
+                            {
+                                thisPlayer.CurrentPosition.x = x;
+                                thisPlayer.CurrentPosition.y = y;
+                                thisPlayer.CurrentPosition.z = z;
+                            };
+                            play.ReceiveRotationAsync += async (float yaw, float pitch, float headYaw) =>
+                            {
+                                thisPlayer.CurrentPosition.yaw = yaw;
+                                thisPlayer.CurrentPosition.pitch = pitch;
+                                thisPlayer.CurrentPosition.headYaw = headYaw;
+                            };
+                            play.ReceiveSwingAsync += async (bool offhand) =>
+                            {
+                                if (offhand) thisPlayer.SwingOff = true;
+                                else thisPlayer.SwingMain = true;
+                            };
+                            play.ReceiveActionAsync += async (PlayerAction action) =>
+                            {
+                                //_ = BroadcastMessageAsync(new ChatText($"{player.Name} did {Enum.GetName(action)!}"));
+                            };
+                            play.ReceiveHotbarAsync += async (int slot) =>
+                            {
+
+                            };
+                        }
+                        finally
+                        {
+
+                        }
+                    }
+                };
+                Task configurationTask = configuration.StartReceivingAsync();
+                await configuration.SendRegistryAsync(Worlds.Select(world => world.Value.Object).ToArray());
+                await configuration.SendRegistryAsync(Biomes.ToArray());
+                await configuration.TEMP_A_SendRegistryAsync();
+                await configuration.TEMP_B_SendRegistryAsync();
+                await configuration.SendFluidsAsync([1], []);
+                await configuration.SendEndAsync();
+                await configurationTask;
+            }
+        }
         internal async Task ServeAsync(Player player)
         {
             while(player.Connection.ProtocolState != ProtocolState.Disconnected)
@@ -55,54 +188,6 @@ namespace Me.Shishioko.Msdl.Test
                 SJNC? sjnc = null;
                 try
                 {
-                    World world = Worlds.Values.First();
-                    World? nextWorld = null;
-                    await player.Connection.SendConfigurationRegistryAsync(Worlds.Select(world => world.Value.Object).ToArray());
-                    await player.Connection.SendConfigurationRegistryAsync(Biomes.ToArray());
-                    await player.Connection.SendConfigurationRegistryAsync_Temp_A();
-                    await player.Connection.SendConfigurationRegistryAsync_Temp_B();
-                    await player.Connection.SendFluidsAsync([1], []);
-                    player.Connection.ReceivePreferencesAsync = async (Preferences preferences) =>
-                    {
-                        player.Entity.Righthanded = preferences.RightHanded;
-                    };
-                    player.Connection.ReceiveConfigurationMessageAsync = async (string channel, byte[] data) =>
-                    {
-                        MemoryStream packetIn = new(data);
-                        switch (channel)
-                        {
-                            case "minecraft:brand":
-                                {
-                                    Console.WriteLine(packetIn.ReadString(SizePrefix.S32V, 256));
-                                    break;
-                                }
-                            default:
-                                {
-                                    Console.WriteLine(channel);
-                                    break;
-                                }
-                        }
-                    };
-                    await player.Connection.SendConfigurationEndAsync();
-                    while (player.Connection.ProtocolState == ProtocolState.Configuration) await player.Connection.ProcessConfigurationAsync();
-                    if (player.Connection.ProtocolState == ProtocolState.Disconnected) return;
-                    if (!Players.TryAdd(player.ID, player)) return;
-                    player.EID = ++LastEID;
-                    player.Connection.ReceivePreferencesAsync += async (Preferences preferences) =>
-                    {
-                        await Task.WhenAll(world.Players.Values.Select(async (currentPlayer) =>
-                        {
-                            if (currentPlayer == player) return;
-                            try
-                            {
-                                await currentPlayer.Connection.SendEntityDataAsync(player.EID, player.Entity, null);
-                            }
-                            catch (Exception)
-                            {
-
-                            }
-                        }));
-                    };
                     player.Connection.ReceiveCommandAsync = async (string message) =>
                     {
                         string[] split = message.Split(' ', 2);
@@ -206,6 +291,13 @@ namespace Me.Shishioko.Msdl.Test
                                     //await player.Connection.SendEffectAddAsync(player.EID, Effect.Levitation, int.MaxValue, 100, true, true, true, true);
                                     break;
                                 }
+                            case "give":
+                                {
+                                    Type? type = Assembly.GetAssembly(typeof(Item))?.GetType($"{typeof(Item).FullName}{input}");
+                                    if (type is null) break;
+                                    player.Hotbar[4] = (Item?)Activator.CreateInstance(type);
+                                    break;
+                                }
                             case "block":
                                 {
                                     BlockGrassBlock block = new()
@@ -276,106 +368,8 @@ namespace Me.Shishioko.Msdl.Test
                                 }
                         }
                     };
-                    player.Connection.ReceiveBreakAsync = async (Position location, float progress, BlockFace face) =>
-                    {
-                        world.SetBlock(location.X, location.Y, location.Z, 0);
-                    };
-                    player.Connection.ReceiveInteractionBlockAsync = async (bool offhanded, Position position, BlockFace face, float cursorX, float cursorY, float cursorZ, bool inside) =>
-                    {
-                        int x = position.X;
-                        int y = position.Y;
-                        int z = position.Z;
-                        switch (face)
-                        {
-                            case BlockFace.Top:
-                                {
-                                    y++;
-                                    break;
-                                }
-                            case BlockFace.Bottom:
-                                {
-                                    y--;
-                                    break;
-                                }
-                            case BlockFace.North:
-                                {
-                                    z--;
-                                    break;
-                                }
-                            case BlockFace.South:
-                                {
-                                    z++;
-                                    break;
-                                }
-                            case BlockFace.West:
-                                {
-                                    x--;
-                                    break;
-                                }
-                            case BlockFace.East:
-                                {
-                                    x++;
-                                    break;
-                                }
-                        }
-                        Block? block = player.Hotbar[4]?.Block;
-                        if (block is not null) world.SetBlock(x, y, z, block.Id);
-                    };
-                    player.Connection.ReceiveLocationAsync = async (double x, double y, double z) =>
-                    {
-                        await Task.WhenAll(world.Players.Values.Select(async (currentPlayer) =>
-                        {
-                            if (currentPlayer == player) return;
-                            try
-                            {
-                                await currentPlayer.Connection.SendEntityPositionAsync(player.EID, (x, y, z, player.Yaw, player.Pitch, player.HeadYaw), (player.X, player.Y, player.Z, player.Yaw, player.Pitch, player.HeadYaw));
-                            }
-                            catch (Exception)
-                            {
 
-                            }
-                        }));
-                        player.X = x;
-                        player.Y = y;
-                        player.Z = z;
-                    };
-                    player.Connection.ReceiveRotationAsync = async (float yaw, float pitch) =>
-                    {
-                        await Task.WhenAll(world.Players.Values.Select(async (currentPlayer) =>
-                        {
-                            if (currentPlayer == player) return;
-                            try
-                            {
-                                await currentPlayer.Connection.SendEntityPositionAsync(player.EID, (player.X, player.Y, player.Z, yaw, pitch, yaw), (player.X, player.Y, player.Z, player.Yaw, player.Pitch, player.HeadYaw));
-                            }
-                            catch (Exception)
-                            {
-
-                            }
-                        }));
-                        player.Yaw = yaw;
-                        player.HeadYaw = yaw;
-                        player.Pitch = pitch;
-                    };
-                    player.Connection.ReceiveSwingAsync = async (bool offhanded) =>
-                    {
-                        await Task.WhenAll(world.Players.Values.Select(async (currentPlayer) =>
-                        {
-                            if (currentPlayer == player) return;
-                            try
-                            {
-                                await currentPlayer.Connection.SendEntityAnimationAsync(player.EID, offhanded ? EntityAnimation.SwingOffhand : EntityAnimation.SwingMain);
-                            }
-                            catch (Exception)
-                            {
-
-                            }
-                        }));
-                    };
-                    player.Connection.ReceiveActionAsync = async (PlayerAction action) =>
-                    {
-                        //_ = BroadcastMessageAsync(new ChatText($"{player.Name} did {Enum.GetName(action)!}"));
-                    };
+                    
                     player.Connection.ReceiveHotbarAsync = async (int slot) =>
                     {
                         Item?[] hotbar = [.. player.Hotbar];

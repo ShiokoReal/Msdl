@@ -11,7 +11,8 @@
         }
         public override BlockWater Clone() => new()
         {
-            Level = (byte)Level,
+            Level = Level,
+            Flowing = Flowing,
         };
     }
 }

@@ -9,7 +9,6 @@ namespace Me.Shishioko.Msdl.Data
         public readonly Position Location;
         public DeathLocation(string dimension, Position location)
         {
-            Contract.Assert(!Connection.NamespaceRegex().IsMatch(dimension));
             Dimension = dimension;
             Location = location;
         }

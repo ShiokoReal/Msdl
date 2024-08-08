@@ -51,7 +51,6 @@ namespace Me.Shishioko.Msdl.Data
         public Biome(string name)
         {
             Name = name;
-            if (!Connection.NamespaceRegex().IsMatch(name)) throw new ArgumentException();
         }
         //TODO: particle (float:probability,compound:properties+type:particle_type)
     }

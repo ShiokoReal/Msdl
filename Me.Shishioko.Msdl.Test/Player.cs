@@ -1,4 +1,5 @@
-﻿using Me.Shishioko.Msdl.Data;
+﻿using Me.Shishioko.Msdl.Clients;
+using Me.Shishioko.Msdl.Data;
 using Me.Shishioko.Msdl.Data.Chat;
 using Me.Shishioko.Msdl.Data.Entities;
 using Me.Shishioko.Msdl.Data.Items;
@@ -8,28 +9,30 @@ namespace Me.Shishioko.Msdl.Test
 {
     public sealed class Player
     {
+        public readonly ClientPlay Connection;
         public readonly Guid ID;
-        public readonly Connection Connection;
+        public readonly int EID = -1;
         public readonly string Name;
         public readonly Property[] Properties;
         public readonly string OriginAddress;
         public readonly ushort OriginPort;
-        public int EID = -1;
-        public double X = 0.0;
-        public double Y = 0.0;
-        public double Z = 0.0;
-        public float Yaw = 0.0f;
-        public float Pitch = 0.0f;
-        public float HeadYaw = 0.0f;
-        public EntityPlayer Entity = new();
+        public (double x, double y, double z, float yaw, float pitch, float headYaw) CurrentPosition = new(0.0, 0.0, 0.0, 0.0f, 0.0f, 0.0f);
+        public (double x, double y, double z, float yaw, float pitch, float headYaw) PreviousPosition = new(0.0, 0.0, 0.0, 0.0f, 0.0f, 0.0f);
+        public EntityPlayer CurrentEntity = new();
+        public EntityPlayer PreviousEntity = new();
+        public bool SwingMain = false;
+        public bool SwingOff = false;
+        public int CurrentHotbarSlot = 0;
+        public int PreviousHotbarSlot = 0;
         public Item?[] Hotbar = new Item?[9];
         public readonly Color LightColor;
         public readonly Color MediumColor;
         public readonly Color DarkColor;
-        public Player(Guid id, Connection connection, string name, Property[] properties, string originAddress, ushort originPort)
+        public Player(ClientPlay connection, Guid id, int eid , string name, Property[] properties, string originAddress, ushort originPort)
         {
-            ID = id;
             Connection = connection;
+            ID = id;
+            EID = eid;
             Name = name;
             Properties = properties;
             OriginAddress = originAddress;
