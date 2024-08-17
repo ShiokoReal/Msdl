@@ -15,6 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Blocks\Attributes\**" />
+    <EmbeddedResource Remove="Blocks\Attributes\**" />
+    <None Remove="Blocks\Attributes\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.10.48" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
@@ -26,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
+    <Folder Include="Blocks\%28Generated%29\" />
   </ItemGroup>
 
 </Project>

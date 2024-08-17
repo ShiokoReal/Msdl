@@ -2,15 +2,16 @@
 {
     public abstract class Block
     {
-        public abstract int Id { get; }
-        public abstract byte LightEmit { get; }
-        public abstract byte LightFilter { get; }
-        public abstract bool SoftHitboxCollision { get; }
-        public abstract bool HardHitboxCollision { get; }
+        public abstract int BlockId { get; }
+        public abstract int LiquidId { get; }
+        public abstract int LightEmission { get; }
+        public abstract int LightFilter { get; }
+        public abstract (double xa, double ya, double za, double xb, double yb, double zb)[] Collisions { get; }
         internal Block()
         {
 
         }
         public abstract Block Clone();
+        public abstract Block Break();
     }
 }

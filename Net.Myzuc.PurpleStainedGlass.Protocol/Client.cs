@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using Net.Myzuc.PurpleStainedGlass.Protocol.Objects;
+using Net.Myzuc.PurpleStainedGlass.Protocol.Const;
+using Net.Myzuc.PurpleStainedGlass.Protocol.Packets.Play;
 
 namespace Net.Myzuc.PurpleStainedGlass.Protocol
 {
@@ -38,6 +40,7 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol
         internal RegistryBiome[] BiomeRegistry = [];
         internal RegistryChat[] ChatRegistry = [];
         internal RegistryDamage[] DamageRegistry = [];
+        internal RegistryDimension? Dimension = null;
         public Client(Stream stream)
         {
             Stream = stream;
@@ -76,7 +79,8 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol
                     byte[] buffer = await DirectReceiveAsync();
                     using MemoryStream stream = new(buffer);
                     int id = stream.ReadS32V();
-                    Serverbound packet = DecodePacket(id, stream);
+                    Serverbound? packet = DecodePacket(id, stream);
+                    if (packet is null) continue; //TODO: remove
                     if (stream.Position != stream.Length) throw new ProtocolViolationException();
                     QueueIn.Enqueue(packet);
                 }
@@ -148,7 +152,7 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol
             }
             await Stream.WriteU8AAsync(data, SizePrefix.S32V);
         }
-        private Serverbound DecodePacket(int id, MemoryStream stream) => State switch
+        private Serverbound? DecodePacket(int id, MemoryStream stream) => State switch
         {
             EnumState.Handshake => id switch
             {
@@ -181,6 +185,11 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol
                 0x06 => new Configuration.ServerboundResourcepackFeedback(stream),
                 0x07 => new Configuration.ServerboundDatapacks(stream),
                 _ => throw new ProtocolViolationException()
+            },
+            EnumState.Play => id switch
+            {
+                PacketIds.IncomingPlayCommand => new ServerboundChatCommand(stream),
+                _ => null//_ => throw new ProtocolViolationException()
             },
             _ => throw new ProtocolViolationException()
         };

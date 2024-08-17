@@ -1,7 +1,6 @@
 ﻿using Net.Myzuc.ShioLib;
 using System;
 using System.IO;
-using System.Net;
 
 namespace Net.Myzuc.PurpleStainedGlass.Protocol.Packets.Login
 {

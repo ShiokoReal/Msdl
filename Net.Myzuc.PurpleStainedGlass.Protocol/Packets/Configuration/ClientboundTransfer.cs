@@ -1,8 +1,5 @@
-﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Chat;
-using Net.Myzuc.ShioLib;
-using System;
+﻿using Net.Myzuc.ShioLib;
 using System.IO;
-using System.Linq;
 
 namespace Net.Myzuc.PurpleStainedGlass.Protocol.Packets.Configuration
 {

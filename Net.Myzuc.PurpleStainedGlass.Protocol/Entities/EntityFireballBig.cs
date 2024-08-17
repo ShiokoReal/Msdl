@@ -1,4 +1,4 @@
-﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Items;
+﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Items;
 
 namespace Net.Myzuc.PurpleStainedGlass.Protocol.Entities
 {

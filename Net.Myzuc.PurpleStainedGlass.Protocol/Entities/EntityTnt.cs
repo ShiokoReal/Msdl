@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using Net.Myzuc.PurpleStainedGlass.Protocol.Blocks;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Blocks;
 using Net.Myzuc.PurpleStainedGlass.Protocol.Const;
 using Net.Myzuc.ShioLib;
 
@@ -34,7 +33,7 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Entities
             {
                 stream.WriteU8(9);
                 stream.WriteU8(MetadataType.BlockId);
-                stream.WriteS32V(Block.Id);
+                stream.WriteS32V(Block.BlockId);
             }
         }
         public override void CloneFrom(Entity rawEntity)

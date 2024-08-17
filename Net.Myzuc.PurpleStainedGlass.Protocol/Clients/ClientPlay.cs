@@ -1,9 +1,9 @@
 ﻿/*using Net.Myzuc.PurpleStainedGlass.Protocol.Connections;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Chat;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Entities;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Items;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Protocol;
+using Net.Myzuc.PurpleStainedGlass.Protocol;
+using Net.Myzuc.PurpleStainedGlass.Protocol.Chat;
+using Net.Myzuc.PurpleStainedGlass.Protocol.Entities;
+using Net.Myzuc.PurpleStainedGlass.Protocol.Items;
+using Net.Myzuc.PurpleStainedGlass.Protocol.Protocol;
 using Net.Myzuc.ShioLib;
 using System;
 using System.Collections.Generic;
@@ -382,176 +382,12 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Clients
             packetOut.WriteS32(z);
             return Client.SendAsync(packetOut.ToArray());
         }
-        public Task SendChunkWaitAsync()
-        {
-            if (Complete) throw new InvalidOperationException();
-            using MemoryStream packetOut = new();
-            packetOut.WriteS32V(PacketIds.OutgoingPlayEvent);
-            packetOut.WriteU8(13);
-            packetOut.WriteF32(0.0f);
-            return Client.SendAsync(packetOut.ToArray());
-        }
         public Task SendHeartbeatAsync(long sequence)
         {
             if (Complete) throw new InvalidOperationException();
             using MemoryStream packetOut = new();
             packetOut.WriteS32V(PacketIds.OutgoingPlayHeartbeat);
             packetOut.WriteS64(sequence);
-            return Client.SendAsync(packetOut.ToArray());
-        }
-        public Task SendChunkFullAsync(int x, int z, int[][] blocks, int[][] biomes, SemiCompactArray?[] skyLight, SemiCompactArray?[] blockLight, SemiCompactArray motionBlocking)
-        {
-            if (Complete) throw new InvalidOperationException();
-            if (blocks.Length * 16 != DimensionType.Value.Height) throw new ArgumentException();
-            if (biomes.Length * 16 != DimensionType.Value.Height) throw new ArgumentException();
-            if (blockLight.Length * 16 != DimensionType.Value.Height + 32) throw new ArgumentException();
-            if (skyLight.Length * 16 != DimensionType.Value.Height + 32) throw new ArgumentException();
-            if (motionBlocking.Bits != (int)Math.Ceiling(Math.Log2(DimensionType!.Value.Height))) throw new ArgumentException();
-            if (motionBlocking.Length != 256) throw new ArgumentException();
-            using MemoryStream packetOut = new();
-            packetOut.WriteS32V(PacketIds.OutgoingPlayChunkFull);
-            packetOut.WriteS32(x);
-            packetOut.WriteS32(z);
-            packetOut.WriteU8(0x0A);
-            packetOut.WriteU8(12);
-            packetOut.WriteString("MOTION_BLOCKING", SizePrefix.S16);
-            packetOut.WriteS32(motionBlocking.Data.Length);
-            packetOut.WriteU64A(motionBlocking.Data);
-            packetOut.WriteU8(0);
-            using MemoryStream dataOut = new();
-            for (int i = 0; i < blocks.Length; i++)
-            {
-                int[] block = blocks[i];
-                Contract.Assert(block.Length == 4096);
-                Dictionary<int, int> blockCounts = [];
-                ushort count = 0;
-                for (int e = 0; e < 4096; e++)
-                {
-                    int id = Math.Clamp(block[e], 0, 32768); //TODO: proper auto updating value
-                    if (id != 0) count++; //TODO: support other air block types
-                    blockCounts.TryAdd(id, 0);
-                    blockCounts[id]++;
-                }
-                dataOut.WriteU16(count);
-                byte blockBits = (byte)Math.Ceiling(Math.Log2(blockCounts.Count));
-                byte blockBitsTotal = (byte)Math.Ceiling(Math.Log2(32768)); //TODO: proper auto updating value
-                if (blockBits > 8)
-                {
-                    SemiCompactArray data = new(blockBitsTotal, 4096);
-                    dataOut.WriteU8(data.Bits);
-                    for (int e = 0; e < data.Length; e++) data[e] = Math.Clamp(block[e], 0, 32768); //TODO: proper auto updating value
-                    dataOut.WriteU64A(data.Data, SizePrefix.S32V);
-                }
-                else
-                if (blockBits > 0)
-                {
-                    byte usedBits = blockBits < 4 ? (byte)4 : blockBits;
-                    dataOut.WriteU8(usedBits);
-                    SemiCompactArray data = new(usedBits, 4096);
-                    Dictionary<int, int> mappings = [];
-                    dataOut.WriteS32V(blockCounts.Count);
-                    foreach (int id in blockCounts.Keys)
-                    {
-                        mappings[id] = mappings.Count;
-                        dataOut.WriteS32V(id);
-                    } //TODO: below: fix evaluation time of clamp thing and in other occurences too
-                    for (int e = 0; e < 4096; e++) data[e] = mappings[Math.Clamp(block[e], 0, 32768)]; //TODO: proper auto updating value
-                    dataOut.WriteU64A(data.Data, SizePrefix.S32V);
-                }
-                else
-                {
-                    dataOut.WriteU8(0);
-                    dataOut.WriteS32V(blockCounts.First().Key);
-                    dataOut.WriteS32V(0);
-                }
-                int[] biome = biomes[i];
-                Contract.Assert(biome.Length == 64);
-                Dictionary<int, int> biomeCounts = [];
-                for (int e = 0; e < 64; e++)
-                {
-                    int id = Math.Clamp(biome[e], 0, Biomes.Length);
-                    biomeCounts.TryAdd(id, 0);
-                    biomeCounts[id]++;
-                }
-                byte biomeBits = (byte)Math.Ceiling(Math.Log2(biomeCounts.Count));
-                byte biomeBitsTotal = (byte)Math.Ceiling(Math.Log2(Biomes.Length));
-                if (biomeBits >= 4)
-                {
-                    dataOut.WriteU8(biomeBitsTotal);
-                    SemiCompactArray data = new(biomeBitsTotal, 64);
-                    for (int e = 0; e < data.Length; e++) data[i] = Math.Clamp(biome[e], 0, Biomes.Length);
-                    dataOut.WriteU64A(data.Data, SizePrefix.S32V);
-                }
-                else
-                if (biomeBits > 0)
-                {
-                    dataOut.WriteU8(biomeBits);
-                    SemiCompactArray data = new(biomeBits, 64);
-                    Dictionary<int, int> mappings = [];
-                    dataOut.WriteS32V(biomeCounts.Count);
-                    foreach (int id in biomeCounts.Keys)
-                    {
-                        mappings[id] = mappings.Count;
-                        dataOut.WriteS32V(id);
-                    }
-                    for (int e = 0; e < data.Length; e++) data[i] = mappings[Math.Clamp(biome[e], 0, Biomes.Length)];
-                    dataOut.WriteU64A(data.Data, SizePrefix.S32V);
-                }
-                else
-                {
-                    dataOut.WriteU8(0);
-                    dataOut.WriteS32V(biomeCounts.First().Key);
-                    dataOut.WriteS32V(0);
-                }
-            }
-            packetOut.WriteU8A(dataOut.ToArray(), SizePrefix.S32V);
-            packetOut.WriteS32V(0); //TODO: block entities
-            SemiCompactArray maskSkyLight = new(1, skyLight.Length);
-            SemiCompactArray maskSkyLightEmpty = new(1, skyLight.Length);
-            SemiCompactArray maskBlockLight = new(1, blockLight.Length);
-            SemiCompactArray maskBlockLightEmpty = new(1, blockLight.Length);
-            int numSkyLight = 0;
-            for (int i = 0; i < skyLight.Length; i++)
-            {
-                SemiCompactArray? light = skyLight[i];
-                if (light is not null)
-                {
-                    Contract.Assert(light.Bits == 4);
-                    Contract.Assert(light.Length == 4096);
-                    numSkyLight++;
-                    maskSkyLight[i] = light.Data is not null ? 1 : 0;
-                    maskSkyLightEmpty[i] = light.Data is null ? 1 : 0;
-                }
-            }
-            int numBlockLight = 0;
-            for (int i = 0; i < blockLight.Length; i++)
-            {
-                SemiCompactArray? light = blockLight[i];
-                if (light is not null)
-                {
-                    Contract.Assert(light.Bits == 4);
-                    Contract.Assert(light.Length == 4096);
-                    numBlockLight++;
-                    maskBlockLight[i] = light.Data is not null ? 1 : 0;
-                    maskBlockLightEmpty[i] = light.Data is null ? 1 : 0;
-                }
-            }
-            packetOut.WriteU64A(maskSkyLight.Data, SizePrefix.S32V);
-            packetOut.WriteU64A(maskBlockLight.Data, SizePrefix.S32V);
-            packetOut.WriteU64A(maskSkyLightEmpty.Data, SizePrefix.S32V);
-            packetOut.WriteU64A(maskBlockLightEmpty.Data, SizePrefix.S32V);
-            packetOut.WriteS32V(numSkyLight);
-            for (int i = 0; i < skyLight.Length; i++)
-            {
-                if (maskSkyLight[i] == 0) continue;
-                packetOut.WriteU8A(MemoryMarshal.AsBytes<ulong>(skyLight[i].Data).ToArray(), SizePrefix.S32V);
-            }
-            packetOut.WriteS32V(numBlockLight);
-            for (int i = 0; i < blockLight.Length; i++)
-            {
-                if (maskBlockLight[i] == 0) continue;
-                packetOut.WriteU8A(MemoryMarshal.AsBytes<ulong>(blockLight[i].Data).ToArray(), SizePrefix.S32V);
-            }
             return Client.SendAsync(packetOut.ToArray());
         }
         public Task SendChunkLightAsync(int x, int z, SemiCompactArray?[] skyLight, SemiCompactArray?[] blockLight)
@@ -609,42 +445,6 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Clients
                 if (maskBlockLight[i] == 0) continue;
                 packetOut.WriteU8A(MemoryMarshal.AsBytes<ulong>(blockLight[i].Data).ToArray(), SizePrefix.S32V);
             }
-            return Client.SendAsync(packetOut.ToArray());
-        }
-        public Task SendInitializeAsync(int entityID, bool hardcore, int renderDistance, bool reducedDebug, bool respawnScreen, string[] dimensionNames, Dimension dimensionType, string dimensionName, ulong seedHash, Gamemode currentGamemode, Gamemode? previousGamemode, bool flatWorld, DeathLocation? deathLocation)
-        {
-            if (Complete) throw new InvalidOperationException();
-            if (renderDistance < 1) throw new ArgumentException();
-            if (!dimensionNames.Contains(dimensionName)) throw new ArgumentException();
-            DimensionNames = dimensionNames;
-            using MemoryStream packetOut = new();
-            packetOut.WriteS32V(PacketIds.OutgoingPlayStart);
-            packetOut.WriteS32(EID = entityID);
-            packetOut.WriteBool(Hardcore = hardcore);
-            packetOut.WriteS32V(DimensionNames!.Length);
-            for (int i = 0; i < DimensionNames.Length; i++) packetOut.WriteString(DimensionNames[i], SizePrefix.S32V);
-            packetOut.WriteS32V(0);
-            packetOut.WriteS32V(renderDistance);
-            packetOut.WriteS32V(renderDistance);
-            packetOut.WriteBool(reducedDebug);
-            packetOut.WriteBool(RespawnScreen = respawnScreen);
-            packetOut.WriteBool(false);
-            packetOut.WriteS32V(Array.IndexOf(DimensionTypes!, DimensionType = dimensionType));
-            packetOut.WriteString(DimensionName = dimensionName, SizePrefix.S32V);
-            packetOut.WriteU64(seedHash);
-            packetOut.WriteU8((byte)(Gamemode = currentGamemode));
-            packetOut.WriteS8(previousGamemode.HasValue ? (sbyte)previousGamemode.Value : (sbyte)-1);
-            packetOut.WriteBool(false);
-            packetOut.WriteBool(flatWorld);
-            packetOut.WriteBool(deathLocation.HasValue);
-            if (deathLocation.HasValue)
-            {
-                Contract.Assert(DimensionNames.Contains(deathLocation.Value.Dimension));
-                packetOut.WriteString(deathLocation.Value.Dimension, SizePrefix.S32V);
-                packetOut.WriteU64(deathLocation.Value.Location.Data);
-            }
-            packetOut.WriteS32V(0);
-            packetOut.WriteBool(false);
             return Client.SendAsync(packetOut.ToArray());
         }
         public Task SendTablistRemoveAsync(Guid[] id)
@@ -722,21 +522,6 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Clients
             }
             return Client.SendAsync(packetOut.ToArray());
         }
-        public Task SendPlayerPositionAsync(double x, double y, double z, float yaw, float pitch, int id)
-        {
-            if (Complete) throw new InvalidOperationException();
-            Contract.Assert(DimensionName is not null);
-            using MemoryStream packetOut = new();
-            packetOut.WriteS32V(PacketIds.OutgoingPlayPlayerPosition);
-            packetOut.WriteF64(x);
-            packetOut.WriteF64(y);
-            packetOut.WriteF64(z);
-            packetOut.WriteF32(yaw);
-            packetOut.WriteF32(pitch);
-            packetOut.WriteU8(0);
-            packetOut.WriteS32V(id);
-            return Client.SendAsync(packetOut.ToArray());
-        }
         public Task SendEntityRemoveAsync(int[] eid)
         {
             if (Complete) throw new InvalidOperationException();
@@ -787,25 +572,6 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Clients
             using MemoryStream packetOut = new();
             packetOut.WriteS32V(PacketIds.OutgoingPlayHotbar);
             packetOut.WriteS8((sbyte)(((slot % 9) + 9) % 9));
-            return Client.SendAsync(packetOut.ToArray());
-        }
-        public Task SendChunkCenterAsync(int x, int z)
-        {
-            if (Complete) throw new InvalidOperationException();
-            using MemoryStream packetOut = new();
-            packetOut.WriteS32V(PacketIds.OutgoingPlayChunkCenter);
-            packetOut.WriteS32V(x);
-            packetOut.WriteS32V(z);
-            return Client.SendAsync(packetOut.ToArray());
-        }
-        public Task SendSpawnpointAsync(Position position, float angle)
-        {
-            if (Complete) throw new InvalidOperationException();
-            Contract.Assert(DimensionName is not null);
-            using MemoryStream packetOut = new();
-            packetOut.WriteS32V(PacketIds.OutgoingPlaySpawnpoint);
-            packetOut.WriteU64(position.Data);
-            packetOut.WriteF32(angle);
             return Client.SendAsync(packetOut.ToArray());
         }
         public Task SendEntityDataAsync(int eid, Entity entity, Entity? previous = null)

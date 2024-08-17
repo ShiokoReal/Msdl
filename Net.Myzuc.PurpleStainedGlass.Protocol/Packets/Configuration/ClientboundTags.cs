@@ -1,5 +1,4 @@
-﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Blocks;
-using Net.Myzuc.ShioLib;
+﻿using Net.Myzuc.ShioLib;
 using System.IO;
 
 namespace Net.Myzuc.PurpleStainedGlass.Protocol.Packets.Configuration
@@ -8,7 +7,7 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Packets.Configuration
     {
         private const int Id = 0x0D;
         public override Client.EnumState Mode => Client.EnumState.Configuration;
-        public ClientboundTags(BlockLiquid[] water, BlockLiquid[] lava)
+        public ClientboundTags(int[] water, int[] lava)
         {
             using MemoryStream stream = new();
             stream.WriteS32V(Id);
@@ -19,13 +18,13 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Packets.Configuration
             stream.WriteS32V(water.Length);
             for (int i = 0; i < water.Length; i++)
             {
-                stream.WriteS32V(water[i].FluidId);
+                stream.WriteS32V(water[i]);
             }
             stream.WriteString("lava", SizePrefix.S32V);
             stream.WriteS32V(lava.Length);
             for (int i = 0; i < lava.Length; i++)
             {
-                stream.WriteS32V(lava[i].FluidId);
+                stream.WriteS32V(lava[i]);
             }
             Buffer = stream.ToArray();
         }

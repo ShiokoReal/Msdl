@@ -33,7 +33,7 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Objects.Chat
         }
         internal override void TypeJsonSerialize(StringBuilder json)
         {
-            json.Append("\"type\":\"translatable\",\"translate\":\"");
+            json.Append("\"translate\":\"");
             json.Append(HttpUtility.JavaScriptStringEncode(Translation.Key, false));
             if (Translation.Arguments is not null)
             {

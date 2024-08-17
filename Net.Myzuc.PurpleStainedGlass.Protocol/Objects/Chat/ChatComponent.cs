@@ -1,5 +1,4 @@
-﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Objects;
-using Net.Myzuc.ShioLib;
+﻿using Net.Myzuc.ShioLib;
 using System.IO;
 using System.Text;
 using System.Web;
@@ -48,9 +47,9 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Objects.Chat
             {
                 json.Append("\"color\":\"");
                 json.Append('#');
-                json.Append(Styling.Color.Value.R.ToString("X2"));
-                json.Append(Styling.Color.Value.G.ToString("X2"));
-                json.Append(Styling.Color.Value.B.ToString("X2"));
+                json.Append(Styling.Color.Value.R.ToString("X02"));
+                json.Append(Styling.Color.Value.G.ToString("X02"));
+                json.Append(Styling.Color.Value.B.ToString("X02"));
                 json.Append("\",");
             }
             if (Styling?.Bold.HasValue ?? false)
@@ -102,7 +101,7 @@ namespace Net.Myzuc.PurpleStainedGlass.Protocol.Objects.Chat
                 json.Append("\"},");
             }
             TypeJsonSerialize(json);
-            if (Children is not null)
+            if (Children is not null && Children.Length > 0)
             {
                 json.Append("\"extra\":[");
                 foreach (ChatComponent component in Children)

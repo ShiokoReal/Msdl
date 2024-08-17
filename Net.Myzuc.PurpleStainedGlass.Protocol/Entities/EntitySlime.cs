@@ -1,8 +1,4 @@
-﻿using System.IO;
-using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Protocol;
-using Net.Myzuc.ShioLib;
-
-namespace Net.Myzuc.PurpleStainedGlass.Protocol.Entities
+﻿namespace Net.Myzuc.PurpleStainedGlass.Protocol.Entities
 {
     public sealed class EntitySlime : EntityResizable
     {

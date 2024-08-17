@@ -1,4 +1,4 @@
-﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Data.Enums;
+﻿using Net.Myzuc.PurpleStainedGlass.Protocol.Enums;
 using Net.Myzuc.ShioLib;
 using System;
 using System.IO;
